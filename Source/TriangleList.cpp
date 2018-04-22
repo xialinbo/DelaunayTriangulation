@@ -128,7 +128,7 @@ void TriangleList::DoTriangulation(DotList* dots)
 
 	dots->ResetCur();
 
-	this->RemoveExtraMesh();
+	this->RemoveExtraTriangle();
 }
 
 void TriangleList::InsertDot(Dot* dot)
@@ -375,7 +375,7 @@ void TriangleList::DoLocalOptimization(Triangle* tri_1, Triangle* tri_2)
 	}	
 }
 
-void TriangleList::RemoveExtraMesh()
+void TriangleList::RemoveExtraTriangle()
 {
 	//extra triangle flag
 	bool is_extra = false;

@@ -22,7 +22,7 @@ public:
 	void DoTriangulation(DotList*);
 	void InsertDot(Dot*);
 	void DoLocalOptimization(Triangle*, Triangle*);
-	void RemoveExtraMesh();
+	void RemoveExtraTriangle();
 	bool NotTooClose(Dot*, Dot*) const;
 	bool MoveToNext();
 	bool IsInvisible(Triangle*) const;
