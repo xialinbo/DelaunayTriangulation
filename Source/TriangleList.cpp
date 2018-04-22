@@ -6,423 +6,296 @@
 
 TriangleList::TriangleList()
 {
-    size = 0;
-    head = new Triangle;
+    _Size = 0;
+    _Head = new Triangle();
+    _Tail = _Head;
+    _Cur = _Head;
 
-    for (int i = 0; i < 3; ++i)
-    {
-        head->Vertex[i] = NULL;
-        head->Neighbor[i] = NULL;
-    }
-
-    head->next = NULL;
-
-    tail = head;
-    cur = head;
-
-    octahedron = new DotList();
+    // prepare initial convex hull with 6 vertices and 8 triangle faces
     Triangle* octa_triangles[8];
 
-    octahedron->AddDot(Vector3D(RADIUS, 0, 0, 105, 105, 255));
-    octahedron->AddDot(Vector3D(0, 0, RADIUS, 105, 105, 255));
-    octahedron->AddDot(Vector3D(-RADIUS, 0, 0, 105, 105, 255));
-    octahedron->AddDot(Vector3D(0, 0, -RADIUS, 105, 105, 255));
-    octahedron->AddDot(Vector3D(0, RADIUS, 0, 105, 105, 255));
-    octahedron->AddDot(Vector3D(0, -RADIUS, 0, 105, 105, 255));
+    _HexVertices[0] = new Vector3D(1, 0, 0);
+    _HexVertices[1] = new Vector3D(0, 0, 1);
+    _HexVertices[2] = new Vector3D(-1, 0, 0);
+    _HexVertices[3] = new Vector3D(0, 0, -1);
+    _HexVertices[4] = new Vector3D(0, 1, 0);
+    _HexVertices[5] = new Vector3D(0, -1, 0);
 
-    for(int i = 0; i < 6; ++i)
+    for(int i = 0; i<8; ++i)
     {
-        hex_vertices[i] = octahedron->GetCurDot();
-        octahedron->MoveToNext();
+        _Tail->Vertex[0] = i<4 ? _HexVertices[4] : _HexVertices[5];
+        _Tail->Vertex[1] = i<4 ? _HexVertices[i] : _HexVertices[(i - 3) % 4];
+        _Tail->Vertex[2] = i<4 ? _HexVertices[(i + 1) % 4] : _HexVertices[(i - 4)];
+
+        octa_triangles[i] = _Tail;
+        
+        _Tail->Next = new Triangle;
+        _Tail = _Tail->Next;
+
+        ++_Size;
     }
 
-    for(int i = 0; i<4; ++i)
+    for (int i = 0; i < 8; ++i)
     {
-        tail->Vertex[0] = hex_vertices[4];
-        tail->Vertex[1] = hex_vertices[i];
-        tail->Vertex[2] = hex_vertices[(i+1)%4];
-
-        octa_triangles[i] = tail;
-
-        tail->next = new Triangle;
-        tail = tail->next;
-
-        for (int i = 0; i<3; ++i)
-        {
-            tail->Vertex[i] = NULL;
-            tail->Neighbor[i] = NULL;
-        }
-
-        tail->next = NULL;
-
-        ++size;
-    }
-
-    for(int i = 4; i<8; ++i)
-    {
-        tail->Vertex[0] = hex_vertices[5];
-        tail->Vertex[1] = hex_vertices[(i-3)%4];
-        tail->Vertex[2] = hex_vertices[(i-4)];
-
-        octa_triangles[i] = tail;
-
-        tail->next = new Triangle;
-        tail = tail->next;
-
-        for (int i = 0; i<3; ++i)
-        {
-            tail->Vertex[i] = NULL;
-            tail->Neighbor[i] = NULL;
-        }
-
-        tail->next = NULL;
-
-        ++size;
-    }
-
-    for(int i = 0; i<4; ++i)
-    {
-        octa_triangles[i]->Neighbor[0] = octa_triangles[(i+3)%4];
-        octa_triangles[i]->Neighbor[1] = octa_triangles[i+4];
-        octa_triangles[i]->Neighbor[2] = octa_triangles[(i+1)%4];
-    }
-
-    for(int i = 0; i<4; ++i)
-    {
-        octa_triangles[i+4]->Neighbor[0] = octa_triangles[(i+1)%4+4];
-        octa_triangles[i+4]->Neighbor[1] = octa_triangles[i];
-        octa_triangles[i+4]->Neighbor[2] = octa_triangles[(i+3)%4+4];
+        octa_triangles[i]->Neighbor[0] = i<4 ? octa_triangles[(i + 3) % 4] : octa_triangles[(i - 3) % 4 + 4];
+        octa_triangles[i]->Neighbor[1] = i<4 ? octa_triangles[i + 4] : octa_triangles[i - 4];
+        octa_triangles[i]->Neighbor[2] = i<4 ? octa_triangles[(i + 1) % 4] : octa_triangles[(i - 1) % 4 + 4];
     }
 }
 
 TriangleList::~TriangleList()
 {
-    while(head!= tail)
+    while(_Head!= _Tail)
     {
-        cur = head->next;
-        delete head;
-        head = cur;
-
-        size--;
+        _Cur = _Head->Next;
+        delete _Head;
+        _Head = _Cur;
+        _Size--;
     }
         
-    delete head;
-    head = NULL;
-    tail = NULL;
-    cur = NULL;
+    delete _Head;
+    _Head = NULL;
+    _Tail = NULL;
+    _Cur = NULL;
 
-    delete octahedron;
-    octahedron = NULL;
     for (int i = 0; i < 6; ++i)
     {
-        hex_vertices[i] = NULL;
+        _HexVertices[i] = NULL;
     }
 }
 
-void TriangleList::DoTriangulation(DotList* dots)
+void TriangleList::InsertDot(Vector3D* dot)
 {
-    do
-    {
-        InsertDot(dots->GetCurDot());
-    } while (dots->MoveToNext());
-
-    dots->ResetCur();
-
-    this->RemoveExtraTriangle();
-}
-
-void TriangleList::InsertDot(Dot* dot)
-{
-    double matrix[] = {0, 0, 0,
-                      0, 0, 0,
-                      0, 0, 0
-    };
 
     double det_1 = 0, det_2 = 0, det_3 = 0;
-    bool insert_not_done = true;
-    int index = 0;
-
-    while(insert_not_done)
+    ResetCur();
+    while(true)
     {
-        //assign coordinate value
-        matrix[0] = cur->Vertex[0]->projection.X;
-        matrix[1] = cur->Vertex[0]->projection.Y;
-        matrix[2] = cur->Vertex[0]->projection.Z;
-        matrix[3] = cur->Vertex[1]->projection.X;
-        matrix[4] = cur->Vertex[1]->projection.Y;
-        matrix[5] = cur->Vertex[1]->projection.Z;
-        matrix[6] = dot->projection.X;
-        matrix[7] = dot->projection.Y;
-        matrix[8] = dot->projection.Z;
+        det_1 = GetDeterminant(_Cur->Vertex[0], _Cur->Vertex[1], dot);
+        det_2 = GetDeterminant(_Cur->Vertex[1], _Cur->Vertex[2], dot);
+        det_3 = GetDeterminant(_Cur->Vertex[2], _Cur->Vertex[0], dot);
 
-        //get the first determinant
-        det_1 = this->GetDeterminant(matrix);
-
-        //assign coordinate value
-        matrix[0] = cur->Vertex[1]->projection.X;
-        matrix[1] = cur->Vertex[1]->projection.Y;
-        matrix[2] = cur->Vertex[1]->projection.Z;
-
-        matrix[3] = cur->Vertex[2]->projection.X;
-        matrix[4] = cur->Vertex[2]->projection.Y;
-        matrix[5] = cur->Vertex[2]->projection.Z;
-
-        //get the second determinant
-        det_2 = this->GetDeterminant(matrix);
-
-        //assign coordinate value
-        matrix[0] = cur->Vertex[2]->projection.X;
-        matrix[1] = cur->Vertex[2]->projection.Y;
-        matrix[2] = cur->Vertex[2]->projection.Z;
-
-        matrix[3] = cur->Vertex[0]->projection.X;
-        matrix[4] = cur->Vertex[0]->projection.Y;
-        matrix[5] = cur->Vertex[0]->projection.Z;
-
-        //get the third determinant
-        det_3 = this->GetDeterminant(matrix);
-
-        //determinant conditions
-        //inside the triangle, create new triangular mesh
+        // if this dot projected into an existing triangle, split the existing triangle to 3 new ones
         if (det_1>= 0 && det_2>= 0 && det_3>= 0)
         {
-            //if not too close
-            if (this->NotTooClose(dot, cur->Vertex[0])&&
-                this->NotTooClose(dot, cur->Vertex[1])&&
-                this->NotTooClose(dot, cur->Vertex[2]))
+            // too close to an existing dot, ignore
+            if (IsTooClose(dot, _Cur->Vertex[0]) ||
+                IsTooClose(dot, _Cur->Vertex[1]) ||
+                IsTooClose(dot, _Cur->Vertex[2]))
             {
-                //create 2 new list node
-                Triangle* temp_1 = new Triangle;
-                Triangle* temp_2 = new Triangle;
+                break;
+            }
 
-                //assign vertex pointer
-                temp_1->Vertex[0] = dot;
-                temp_1->Vertex[1] = cur->Vertex[1];
-                temp_1->Vertex[2] = cur->Vertex[2];
-
-                temp_2->Vertex[0] = dot;
-                temp_2->Vertex[1] = cur->Vertex[2];
-                temp_2->Vertex[2] = cur->Vertex[0];
-
-                cur->Vertex[0] = dot;
-                cur->Vertex[1] = temp_2->Vertex[2];
-                cur->Vertex[2] = temp_1->Vertex[1];
-
-                //change neighbor pointer
-                temp_1->Neighbor[0] = cur;
-                temp_1->Neighbor[1] = cur->Neighbor[1];
-                temp_1->Neighbor[2] = temp_2;
-
-                temp_2->Neighbor[0] = temp_1;
-                temp_2->Neighbor[1] = cur->Neighbor[2];
-                temp_2->Neighbor[2] = cur;
-
-                cur->Neighbor[1] = cur->Neighbor[0];
-                cur->Neighbor[0] = temp_2;
-                cur->Neighbor[2] = temp_1;
-
-                //pointer outside reoriented
-                //temp_1
-                for (int i = 0; i<3; ++i)
-                {
-                    if (temp_1->Neighbor[1]->Neighbor[i] == cur)
-                    {
-                        temp_1->Neighbor[1]->Neighbor[i] = temp_1;
-                        break;
-                    }
-                }
-            
-                //temp_2
-                for (int i = 0; i<3; ++i)
-                {
-                    if (temp_2->Neighbor[1]->Neighbor[i] == cur)
-                    {
-                        temp_2->Neighbor[1]->Neighbor[i] = temp_2;
-                        break;
-                    }
-                }
-
-                //insert and link new list node
-                temp_2->next = cur->next;
-                temp_1->next = temp_2;
-                cur->next = temp_1;
-
-                size+= 2;
-
-                //Local Optimization Procedure
-                //for cur and his new neighbor
-                this->DoLocalOptimization(cur, cur->Neighbor[1]);
-
-                //for temp_1 and his new neighbor
-                this->DoLocalOptimization(temp_1, temp_1->Neighbor[1]);
-
-                //for temp_2 and his new neighbor
-                this->DoLocalOptimization(temp_2, temp_2->Neighbor[1]);
-
-                }
-
-            //done, if dot locates too close, ignore it
-            insert_not_done = false;
+            SplitTriangle(dot, _Cur);
+            break;
         }
 
         //on one side, search neighbors
         else if(det_2>= 0 && det_3>= 0)
-            cur = cur->Neighbor[0];
+            _Cur = _Cur->Neighbor[0];
         else if(det_1>= 0 && det_3>= 0)
-            cur = cur->Neighbor[1];
+            _Cur = _Cur->Neighbor[1];
         else if(det_1>= 0 && det_2>= 0)
-            cur = cur->Neighbor[2];
+            _Cur = _Cur->Neighbor[2];
 
         //cannot determine effectively 
         else if(det_1>0)
-            cur = cur->Neighbor[1];
+            _Cur = _Cur->Neighbor[1];
         else if(det_2>0)
-            cur = cur->Neighbor[2];
+            _Cur = _Cur->Neighbor[2];
         else if(det_3>0)
-            cur = cur->Neighbor[0];
+            _Cur = _Cur->Neighbor[0];
         else
-            cur = cur->next;
-
-        ++index;
+            _Cur = _Cur->Next;
     }
-
-    //reset the cur pointer
-    this->cur = head;
 }
 
-void TriangleList::DoLocalOptimization(Triangle* tri_1, Triangle* tri_2)
+void TriangleList::SplitTriangle(Vector3D* dot, Triangle* triangle)
+{
+    Triangle* newTriangle1 = new Triangle;
+    Triangle* newTriangle2 = new Triangle;
+
+    newTriangle1->Vertex[0] = dot;
+    newTriangle1->Vertex[1] = triangle->Vertex[1];
+    newTriangle1->Vertex[2] = triangle->Vertex[2];
+
+    newTriangle2->Vertex[0] = dot;
+    newTriangle2->Vertex[1] = triangle->Vertex[2];
+    newTriangle2->Vertex[2] = triangle->Vertex[0];
+
+    triangle->Vertex[0] = dot;
+    triangle->Vertex[1] = newTriangle2->Vertex[2];
+    triangle->Vertex[2] = newTriangle1->Vertex[1];
+
+    //change neighbor pointer
+    newTriangle1->Neighbor[0] = triangle;
+    newTriangle1->Neighbor[1] = triangle->Neighbor[1];
+    newTriangle1->Neighbor[2] = newTriangle2;
+
+    newTriangle2->Neighbor[0] = newTriangle1;
+    newTriangle2->Neighbor[1] = triangle->Neighbor[2];
+    newTriangle2->Neighbor[2] = triangle;
+
+    triangle->Neighbor[1] = triangle->Neighbor[0];
+    triangle->Neighbor[0] = newTriangle2;
+    triangle->Neighbor[2] = newTriangle1;
+
+    //point back
+    for (int i = 0; i<3; ++i)
+    {
+        if (newTriangle1->Neighbor[1]->Neighbor[i] == triangle)
+        {
+            newTriangle1->Neighbor[1]->Neighbor[i] = newTriangle1;
+            break;
+        }
+    }
+
+    for (int i = 0; i<3; ++i)
+    {
+        if (newTriangle2->Neighbor[1]->Neighbor[i] == triangle)
+        {
+            newTriangle2->Neighbor[1]->Neighbor[i] = newTriangle2;
+            break;
+        }
+    }
+
+    //insert and link new list node
+    newTriangle2->Next = triangle->Next;
+    newTriangle1->Next = newTriangle2;
+    triangle->Next = newTriangle1;
+
+    _Size += 2;
+
+    //Local Optimization Procedure
+    DoLocalOptimization(triangle, triangle->Neighbor[1]);
+    DoLocalOptimization(newTriangle1, newTriangle1->Neighbor[1]);
+    DoLocalOptimization(newTriangle2, newTriangle2->Neighbor[1]);
+}
+
+void TriangleList::DoLocalOptimization(Triangle* t1, Triangle* t2)
 {
     for(int i = 0; i<3; ++i)
     {
-        if (tri_2->Vertex[i]!= tri_1->Vertex[0] &&
-            tri_2->Vertex[i]!= tri_1->Vertex[1] &&
-            tri_2->Vertex[i]!= tri_1->Vertex[2])
+        if (t2->Vertex[i] == t1->Vertex[0] ||
+            t2->Vertex[i] == t1->Vertex[1] ||
+            t2->Vertex[i] == t1->Vertex[2])
         {
-            //initiate a matrix
-            double matrix[] = {tri_2->Vertex[i]->projection.X-tri_1->Vertex[0]->projection.X,
-                              tri_2->Vertex[i]->projection.Y-tri_1->Vertex[0]->projection.Y,
-                              tri_2->Vertex[i]->projection.Z-tri_1->Vertex[0]->projection.Z,
+            continue;
+        }
 
-                              tri_2->Vertex[i]->projection.X-tri_1->Vertex[1]->projection.X,
-                              tri_2->Vertex[i]->projection.Y-tri_1->Vertex[1]->projection.Y,
-                              tri_2->Vertex[i]->projection.Z-tri_1->Vertex[1]->projection.Z,
+        double matrix[] = {
+            t2->Vertex[i]->X_Projected-t1->Vertex[0]->X_Projected,
+            t2->Vertex[i]->Y_Projected-t1->Vertex[0]->Y_Projected,
+            t2->Vertex[i]->Z_Projected-t1->Vertex[0]->Z_Projected,
 
-                              tri_2->Vertex[i]->projection.X-tri_1->Vertex[2]->projection.X,
-                              tri_2->Vertex[i]->projection.Y-tri_1->Vertex[2]->projection.Y,
-                              tri_2->Vertex[i]->projection.Z-tri_1->Vertex[2]->projection.Z
-            };
+            t2->Vertex[i]->X_Projected-t1->Vertex[1]->X_Projected,
+            t2->Vertex[i]->Y_Projected-t1->Vertex[1]->Y_Projected,
+            t2->Vertex[i]->Z_Projected-t1->Vertex[1]->Z_Projected,
 
-            //get determinant
-            if (this->GetDeterminant(matrix)>0)
+            t2->Vertex[i]->X_Projected-t1->Vertex[2]->X_Projected,
+            t2->Vertex[i]->Y_Projected-t1->Vertex[2]->Y_Projected,
+            t2->Vertex[i]->Z_Projected-t1->Vertex[2]->Z_Projected
+        };
+
+        if (GetDeterminant(matrix) <= 0)
+        {
+            // already optimized
+            break;
+        }
+
+        //swap diagonal
+        for (int j = 0; j<3; ++j)
+        {
+            for (int k = 0; k<3; ++k)
             {
-                //swap diagonal
-                for (int j = 0; j<3; ++j)
+                if (t1->Vertex[j] != t2->Vertex[0] &&
+                    t1->Vertex[j] != t2->Vertex[1] &&
+                    t1->Vertex[j] != t2->Vertex[2] &&
+                    t2->Vertex[k] != t1->Vertex[0] &&
+                    t2->Vertex[k] != t1->Vertex[1] &&
+                    t2->Vertex[k] != t1->Vertex[2])
                 {
-                    for (int k = 0; k<3; ++k)
+                    //change vertices
+                    t1->Vertex[(j+2)%3] = t2->Vertex[k];
+                    t2->Vertex[(k+2)%3] = t1->Vertex[j];
+
+                    //change neighbors
+                    t1->Neighbor[(j+1)%3] = t2->Neighbor[(k+2)%3];
+                    t2->Neighbor[(k+1)%3] = t1->Neighbor[(j+2)%3];
+                    t1->Neighbor[(j+2)%3] = t2;
+                    t2->Neighbor[(k+2)%3] = t1;
+
+                    //point back
+                    for (int l = 0; l<3; ++l)
                     {
-                        if (tri_1->Vertex[j]!= tri_2->Vertex[0] &&
-                            tri_1->Vertex[j]!= tri_2->Vertex[1] &&
-                            tri_1->Vertex[j]!= tri_2->Vertex[2] &&
-                            tri_2->Vertex[k]!= tri_1->Vertex[0] &&
-                            tri_2->Vertex[k]!= tri_1->Vertex[1] &&
-                            tri_2->Vertex[k]!= tri_1->Vertex[2])
+                        if (t1->Neighbor[(j+1)%3]->Neighbor[l] == t2)
                         {
-                            //change vertices
-                            tri_1->Vertex[(j+2)%3] = tri_2->Vertex[k];
-                            tri_2->Vertex[(k+2)%3] = tri_1->Vertex[j];
-
-                            //change neighbors
-                            tri_1->Neighbor[(j+1)%3] = tri_2->Neighbor[(k+2)%3];
-                            tri_2->Neighbor[(k+1)%3] = tri_1->Neighbor[(j+2)%3];
-                            tri_1->Neighbor[(j+2)%3] = tri_2;
-                            tri_2->Neighbor[(k+2)%3] = tri_1;
-
-                            //pointer outside reoriented
-                            for (int l = 0; l<3; ++l)
-                            {
-                                if (tri_1->Neighbor[(j+1)%3]->Neighbor[l] == tri_2)
-                                {
-                                    tri_1->Neighbor[(j+1)%3]->Neighbor[l] = tri_1;
-                                    break;
-                                }
-                            }
-
-                            for (int l = 0; l<3; ++l)
-                            {
-                                if (tri_2->Neighbor[(k+1)%3]->Neighbor[l] == tri_1)
-                                {
-                                    tri_2->Neighbor[(k+1)%3]->Neighbor[l] = tri_2;
-                                    break;
-                                }
-                            }
-
-                            //check new neighbors
-                            this->DoLocalOptimization(tri_1, tri_1->Neighbor[j]);
-                            this->DoLocalOptimization(tri_1, tri_1->Neighbor[(j+1)%3]);
-                            this->DoLocalOptimization(tri_2, tri_2->Neighbor[k]);
-                            this->DoLocalOptimization(tri_2, tri_2->Neighbor[(k+1)%3]);
-
-                            //done
-                            return;
+                            t1->Neighbor[(j+1)%3]->Neighbor[l] = t1;
+                            break;
                         }
                     }
+
+                    for (int l = 0; l<3; ++l)
+                    {
+                        if (t2->Neighbor[(k+1)%3]->Neighbor[l] == t1)
+                        {
+                            t2->Neighbor[(k+1)%3]->Neighbor[l] = t2;
+                            break;
+                        }
+                    }
+
+                    //check new neighbors
+                    DoLocalOptimization(t1, t1->Neighbor[j]);
+                    DoLocalOptimization(t1, t1->Neighbor[(j+1)%3]);
+                    DoLocalOptimization(t2, t2->Neighbor[k]);
+                    DoLocalOptimization(t2, t2->Neighbor[(k+1)%3]);
+
+                    return;
                 }
             }
-
-            //already optimized
-            else break;
         }
     }    
 }
 
 void TriangleList::RemoveExtraTriangle()
 {
-    //extra triangle flag
     bool is_extra = false;
-    //deletion pointer
-    Triangle* del = head->next;
+    Triangle* del = _Head->Next;
 
-    while(del!= tail)
+    while(del != _Tail)
     {
-        //check with 6 extra vertices
         for (int i = 0; i<6; ++i)
         {
-            if (del->Vertex[0] == hex_vertices[i] ||
-                del->Vertex[1] == hex_vertices[i] ||
-                del->Vertex[2] == hex_vertices[i] ||
-                IsInvisible(del))
+            if (del->Vertex[0] == _HexVertices[i] ||
+                del->Vertex[1] == _HexVertices[i] ||
+                del->Vertex[2] == _HexVertices[i])
             {
                 is_extra = true;
                 break;
             }
         }
 
-        //is extra triangle
         if (is_extra)
         {
-            cur->next = del->next;
+            _Cur->Next = del->Next;
             delete del;
-            del = cur->next;
-            size--;            
+            del = _Cur->Next;
+            _Size--;            
         }
-        //not extra triangle
         else
         {
-            cur = del;
-            del = del->next;
+            _Cur = del;
+            del = del->Next;
         }
 
-        //reset extra triangle flag
         is_extra = false;
     }
 
-    //check the head
     for (int i = 0; i<6; ++i)
     {
-        if (head->Vertex[0] == hex_vertices[i] ||
-            head->Vertex[1] == hex_vertices[i] ||
-            head->Vertex[2] == hex_vertices[i] ||
-            IsInvisible(head))
+        if (_Head->Vertex[0] == _HexVertices[i] ||
+            _Head->Vertex[1] == _HexVertices[i] ||
+            _Head->Vertex[2] == _HexVertices[i])
         {
             is_extra = true;
             break;
@@ -431,48 +304,68 @@ void TriangleList::RemoveExtraTriangle()
 
     if (is_extra)
     {
-        del = head;
-        head = head->next;
+        del = _Head;
+        _Head = _Head->Next;
 
         delete del;
         del = NULL;
-        size--;
+        _Size--;
     }
-
-    //reset cur pointer
-    cur = head;
 }
 
-bool TriangleList::NotTooClose(Dot* dot_1, Dot* dot_2) const
+bool TriangleList::IsTooClose(Vector3D* v1, Vector3D* v2)
 {
-    return (pow((dot_1->projection.X-dot_2->projection.X), 2)+
-            pow((dot_1->projection.Y-dot_2->projection.Y), 2)+
-            pow((dot_1->projection.Z-dot_2->projection.Z), 2)) > TOLERANCE;
+    return (pow((v1->X_Projected-v2->X_Projected), 2)+
+            pow((v1->Y_Projected-v2->Y_Projected), 2)+
+            pow((v1->Z_Projected-v2->Z_Projected), 2)) <= TOLERANCE;
+}
+
+double TriangleList::GetDeterminant(Vector3D* v1, Vector3D* v2, Vector3D* v3)
+{
+    double matrix[] = {
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0
+    };
+
+    matrix[0] = v1->X_Projected;
+    matrix[1] = v1->Y_Projected;
+    matrix[2] = v1->Z_Projected;
+
+    matrix[3] = v2->X_Projected;
+    matrix[4] = v2->Y_Projected;
+    matrix[5] = v2->Z_Projected;
+
+    matrix[6] = v3->X_Projected;
+    matrix[7] = v3->Y_Projected;
+    matrix[8] = v3->Z_Projected;
+
+    return GetDeterminant(matrix);
+}
+
+double TriangleList::GetDeterminant(double matrix[])
+{
+    //inversed for left handed coordinate system
+    return matrix[2] * matrix[4] * matrix[6]
+        + matrix[0] * matrix[5] * matrix[7]
+        + matrix[1] * matrix[3] * matrix[8]
+        - matrix[0] * matrix[4] * matrix[8]
+        - matrix[1] * matrix[5] * matrix[6]
+        - matrix[2] * matrix[3] * matrix[7];
+}
+
+void TriangleList::ResetCur()
+{
+    _Cur = _Head;
 }
 
 bool TriangleList::MoveToNext()
 {
-    cur = cur->next;
-    return (cur == tail)? false: true;
-}
-
-bool TriangleList::IsInvisible(Triangle* temp) const
-{
-    return 0;
-}
-
-double TriangleList::GetDeterminant(double matrix[]) const
-{
-    //inversed for left handed coordinate system
-    return matrix[2]*matrix[4]*matrix[6]
-          +matrix[0]*matrix[5]*matrix[7]
-          +matrix[1]*matrix[3]*matrix[8]
-          -matrix[0]*matrix[4]*matrix[8]
-          -matrix[1]*matrix[5]*matrix[6]
-          -matrix[2]*matrix[3]*matrix[7];
+    _Cur = _Cur->Next;
+    return (_Cur == _Tail) ? false : true;
 }
 
 int TriangleList::GetCurVerticesID(int index)
 {
-    return cur->Vertex[index]->id;
+    return _Cur->Vertex[index]->Id;
 }

@@ -1,6 +1,7 @@
 #ifndef VISUALIZATION_H
 #define VISUALIZATION_H
 
+#include "DotList.h"
 #include "TriangleList.h"
 
 class Visualization

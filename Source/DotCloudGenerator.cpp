@@ -19,8 +19,9 @@ DotList* DotCloudGenerator::GetSphericalDots()
     srand((unsigned)time(NULL));
     for (int i = 0; i < dotCount; i++)
     {
-        Vector3D dot = GetRandomDotEvenlyDistributed();
-        file << "# " << dot.X << " " << dot.Y << " " << dot.Z << " " << dot.R << " " << dot.G << " " << dot.B << " " << endl;
+        Vector3D* dot = GetRandomDotEvenlyDistributed();
+        file << "# " << dot->X << " " << dot->Y << " " << dot->Z << " "
+            << dot->R << " " << dot->G << " " << dot->B << " " << endl;
         dots->AddDot(dot);
     }
 
@@ -29,7 +30,7 @@ DotList* DotCloudGenerator::GetSphericalDots()
     return dots;
 }
 
-Vector3D DotCloudGenerator::GetRandomDot()
+Vector3D* DotCloudGenerator::GetRandomDot()
 {
     // use spherical coordinate
     double phi = (rand() % 360) * PI / 180;
@@ -39,10 +40,10 @@ Vector3D DotCloudGenerator::GetRandomDot()
     double y = 1 * sin(theta) * sin(phi);
     double z = 1 * cos(theta);
 
-    return Vector3D(x, y, z, 255, 248, 220);
+    return new Vector3D(x, y, z);
 }
 
-Vector3D DotCloudGenerator::GetRandomDotEvenlyDistributed()
+Vector3D* DotCloudGenerator::GetRandomDotEvenlyDistributed()
 {
     // project random dot in cartesian coordinate to unit sphere
     double x = rand() % 2000 - 1000;
@@ -54,5 +55,5 @@ Vector3D DotCloudGenerator::GetRandomDotEvenlyDistributed()
     y = y / r;
     z = z / r;
 
-    return Vector3D(x, y, z, 255, 248, 220);
+    return new Vector3D(x, y, z);
 }

@@ -20,17 +20,18 @@ void Visualization::ReconstructIn3D(DotList* dots, TriangleList* mesh)
     colors->SetNumberOfComponents(3);
     colors->SetName("Colors");
 
-    Vector3D point;
+    Vector3D* point;
     vtkTriangle* triangle;
 
+    dots->ResetCur();
     do
     {
-        point = dots->GetCurDot()->coordinate;
-
-        points->InsertNextPoint(point.X, point.Y, point.Z);
-        colors->InsertNextTuple3(point.R, point.G, point.B);
+        point = dots->GetCurDot();
+        points->InsertNextPoint(point->X, point->Y, point->Z);
+        colors->InsertNextTuple3(point->R, point->G, point->B);
     } while (dots->MoveToNext());
 
+    mesh->ResetCur();
     do
     {
         triangle = vtkTriangle::New();

@@ -1,66 +1,53 @@
 #include <cmath>
 #include "../Header/DotList.h"
 
-#define RADIUS 100
-
 DotList::DotList()
 {
-    size = 0;
-    head = new Dot;
-    head->next = NULL;
-    tail = head;
-    cur = head;
+    _Size = 0;
+    _Head = new Vector3D;
+    _Tail = _Head;
+    _Cur = _Head;
 }
 
 DotList::~DotList()
 {
-    while (head != tail)
+    while (_Head != _Tail)
     {
-        cur = head->next;
-        delete head;
-        head = cur;
-
-        size--;
+        _Cur = _Head->Next;
+        delete _Head;
+        _Head = _Cur;
+        _Size--;
     }
 
-    delete head;
-    head = NULL;
-    tail = NULL;
-    cur = NULL;
+    delete _Head;
+    _Head = NULL;
+    _Tail = NULL;
+    _Cur = NULL;
 }
 
-void DotList::AddDot(Vector3D point)
+void DotList::AddDot(Vector3D* point)
 {
-    tail->coordinate = point;
-    tail->r = sqrt(pow(tail->coordinate.X, 2)
-        + pow(tail->coordinate.Y, 2)
-        + pow(tail->coordinate.Z, 2));
+    *_Tail = *point;
+    _Tail->Id = _Size;
 
-    tail->projection.X = RADIUS * (tail->coordinate.X) / tail->r;
-    tail->projection.Y = RADIUS * (tail->coordinate.Y) / tail->r;
-    tail->projection.Z = RADIUS * (tail->coordinate.Z) / tail->r;
+    _Tail->Next = new Vector3D;
+    _Tail = _Tail->Next;
 
-    tail->id = size;
-
-    tail->next = new Dot;
-    tail = tail->next;
-    tail->next = NULL;
-
-    ++size;
-}
-
-bool DotList::MoveToNext()
-{
-    cur = cur->next;
-    return (cur == tail) ? false : true;
+    ++_Size;
 }
 
 void DotList::ResetCur()
 {
-    cur = head;
+    _Cur = _Head;
 }
 
-Dot* DotList::GetCurDot()
+bool DotList::MoveToNext()
 {
-    return cur;
+    _Cur = _Cur->Next;
+    return (_Cur == _Tail) ? false : true;
+}
+
+Vector3D* DotList::GetCurDot()
+{
+    return _Cur;
 }

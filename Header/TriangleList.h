@@ -2,31 +2,31 @@
 #define TRIANGLELIST_H
 
 #include "Triangle.h"
-#include "DotList.h"
 
 class TriangleList
 {
 private:
-    int size;
-    Triangle* head;
-    Triangle* tail;
-    Triangle* cur;
+    int _Size;
+    Triangle* _Head;
+    Triangle* _Tail;
+    Triangle* _Cur;
 
-    DotList* octahedron;
-    Dot* hex_vertices[6];
+    Vector3D* _HexVertices[6];
+
+    void SplitTriangle(Vector3D*, Triangle*);
+    void DoLocalOptimization(Triangle*, Triangle*);
+    bool IsTooClose(Vector3D*, Vector3D*);
+    double GetDeterminant(Vector3D*, Vector3D*, Vector3D*);
+    double GetDeterminant(double[]);
 
 public:
     TriangleList();
     ~TriangleList();
 
-    void DoTriangulation(DotList*);
-    void InsertDot(Dot*);
-    void DoLocalOptimization(Triangle*, Triangle*);
+    void InsertDot(Vector3D*);
     void RemoveExtraTriangle();
-    bool NotTooClose(Dot*, Dot*) const;
+    void ResetCur();
     bool MoveToNext();
-    bool IsInvisible(Triangle*) const;
-    double GetDeterminant(double[]) const;
     int GetCurVerticesID(int);
 };
 

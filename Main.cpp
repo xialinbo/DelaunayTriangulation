@@ -31,7 +31,13 @@ int main()
 
         clock_t then = clock();
         TriangleList* mesh = new TriangleList();
-        mesh->DoTriangulation(dots);
+        do
+        {
+            mesh->InsertDot(dots->GetCurDot());
+        } while (dots->MoveToNext());
+
+        mesh->RemoveExtraTriangle();
+
         cout << "Triangulation: " << clock() - then << "ms" << endl;
 
         then = clock();

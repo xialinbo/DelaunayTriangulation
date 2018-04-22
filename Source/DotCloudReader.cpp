@@ -25,7 +25,7 @@ DotList* DotCloudReader::GetDotCloud()
     while (file >> hex)
     {
         file >> x >> y >> z >> red >> green >> blue;
-        dots->AddDot(Vector3D(x, y, z, red, green, blue));
+        dots->AddDot(new Vector3D(x, y, z, red, green, blue));
     }
 
     file.close();

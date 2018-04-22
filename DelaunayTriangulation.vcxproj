@@ -118,6 +118,7 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Source\DotCloudReader.cpp" />
+    <ClCompile Include="Source\Triangle.cpp" />
     <ClCompile Include="Source\TriangleList.cpp" />
     <ClCompile Include="Source\DotCloudGenerator.cpp" />
     <ClCompile Include="Source\DotList.cpp" />
@@ -125,7 +126,6 @@
     <ClCompile Include="Source\Visualization.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Header\Dot.h" />
     <ClInclude Include="Header\DotCloudReader.h" />
     <ClInclude Include="Header\Triangle.h" />
     <ClInclude Include="Header\TriangleList.h" />

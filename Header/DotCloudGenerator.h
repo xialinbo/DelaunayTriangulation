@@ -6,8 +6,8 @@
 class DotCloudGenerator
 {
 private:
-    Vector3D GetRandomDot();
-    Vector3D GetRandomDotEvenlyDistributed();
+    Vector3D* GetRandomDot();
+    Vector3D* GetRandomDotEvenlyDistributed();
 public:
     DotList* GetSphericalDots();
 };
