@@ -6,15 +6,15 @@
 class Dot
 {
 public:
-	//coordinate in cartesian system(x, y, z)
-	Vector3D coordinate;
+    //coordinate in cartesian system(x, y, z)
+    Vector3D coordinate;
 
-	//projected coordinate(x, y, z) in an unit sphere
-	Vector3D projection;
+    //projected coordinate(x, y, z) in an unit sphere
+    Vector3D projection;
 
-	double r;
-	int id;
-	Dot* next;
+    double r;
+    int id;
+    Dot* next;
 };
 
 #endif

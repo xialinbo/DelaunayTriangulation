@@ -6,7 +6,7 @@
 class DotCloudReader
 {
 public:
-	DotList* GetDotCloud();
+    DotList* GetDotCloud();
 };
 
 #endif

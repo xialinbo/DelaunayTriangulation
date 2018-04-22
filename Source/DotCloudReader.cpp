@@ -9,26 +9,26 @@ using namespace std;
 
 DotList* DotCloudReader::GetDotCloud()
 {
-	DotList* dots = new DotList;
+    DotList* dots = new DotList;
 
-	string filename;
-	cout << "Enter name of file in resource directory: ";
-	cin >> filename;
-	filename = "Resource\\" + filename;
-	ifstream file(filename);
+    string filename;
+    cout << "Enter name of file in resource directory: ";
+    cin >> filename;
+    filename = "Resource\\" + filename;
+    ifstream file(filename);
 
-	double x = 0, y = 0, z = 0;
-	int red = 0, green = 0, blue = 0;
-	char hex;
+    double x = 0, y = 0, z = 0;
+    int red = 0, green = 0, blue = 0;
+    char hex;
 
-	//each row start with a "#"
-	while (file >> hex)
-	{
-		file >> x >> y >> z >> red >> green >> blue;
-		dots->AddDot(Vector3D(x, y, z, red, green, blue));
-	}
+    //each row start with a "#"
+    while (file >> hex)
+    {
+        file >> x >> y >> z >> red >> green >> blue;
+        dots->AddDot(Vector3D(x, y, z, red, green, blue));
+    }
 
-	file.close();
+    file.close();
 
-	return dots;
+    return dots;
 }

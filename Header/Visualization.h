@@ -6,7 +6,7 @@
 class Visualization
 {
 public:
-	void ReconstructIn3D(DotList*, TriangleList*);
+    void ReconstructIn3D(DotList*, TriangleList*);
 };
 
 #endif

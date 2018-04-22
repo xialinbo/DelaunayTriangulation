@@ -4,14 +4,14 @@
 class Vector3D
 {
 public:
-	//coordinate
-	double X, Y, Z;
+    //coordinate
+    double X, Y, Z;
 
-	//color
-	int R, G, B;
+    //color
+    int R, G, B;
 
-	Vector3D();
-	Vector3D(double, double, double, int, int, int);
+    Vector3D();
+    Vector3D(double, double, double, int, int, int);
 };
 
 #endif
