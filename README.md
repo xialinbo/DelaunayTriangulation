@@ -11,7 +11,7 @@ Delaunay triangulation in 3D space, to reconstruct convex hull from spherical do
 Random generator will also save a dot cloud file to Resource folder when executing.
 ```
 4. Sample output:<br>
-![Sample output](https://github.com/xialinbo/DelaunayTriangulation/blob/master/SampleResult.png, "Done.")
+![Sample output](https://github.com/xialinbo/DelaunayTriangulation/blob/master/SampleResult.png "Done.")
 
 ## How it works
 Will explain later with image
