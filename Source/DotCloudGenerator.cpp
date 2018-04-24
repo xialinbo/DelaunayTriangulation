@@ -1,15 +1,14 @@
-#include <iostream>
 #include <ctime>
 #include <fstream>
+#include <iostream>
+#include <vector>
 #include "../Header/DotCloudGenerator.h"
 
 #define PI 3.14159265
 
-using namespace std;
-
-DotList* DotCloudGenerator::GetSphericalDots()
+vector<Vector3D*> DotCloudGenerator::GetSphericalDots()
 {
-    DotList* dots = new DotList;
+    vector<Vector3D*> dots = vector<Vector3D*>();
     ofstream file("Resource\\random_out.txt");
 
     int dotCount;
@@ -22,7 +21,7 @@ DotList* DotCloudGenerator::GetSphericalDots()
         Vector3D* dot = GetRandomDotEvenlyDistributed();
         file << "# " << dot->X << " " << dot->Y << " " << dot->Z << " "
             << dot->R << " " << dot->G << " " << dot->B << " " << endl;
-        dots->AddDot(dot);
+        dots.push_back(dot);
     }
 
     file.close();

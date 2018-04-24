@@ -1,13 +1,14 @@
 #ifndef VISUALIZATION_H
 #define VISUALIZATION_H
 
-#include "DotList.h"
-#include "TriangleList.h"
+#include "DelaunayTriangulation.h"
+
+using namespace std;
 
 class Visualization
 {
 public:
-    void ReconstructIn3D(DotList*, TriangleList*);
+    void ReconstructIn3D(vector<Vector3D*>, vector<Triangle*>);
 };
 
 #endif

@@ -3,22 +3,23 @@
 
 class Vector3D
 {
+private:
+    int GetId();
 public:
-    int Id;
+    // auto increment identity
+    int Id = GetId();
 
-    //coordinate in cartesian system(x, y, z)
+    // coordinate in cartesian system(x, y, z)
     double X, Y, Z;
 
-    //projected coordinate(x, y, z) in an unit sphere
-    double X_Projected, Y_Projected, Z_Projected;
+    // projected coordinate(x, y, z) in an unit sphere
+    double Xp, Yp, Zp;
 
-    //color
+    // color
     int R, G, B;
 
-    Vector3D* Next;
-
-    Vector3D();
     Vector3D(double, double, double, int = 255, int = 248, int = 220);
+    ~Vector3D();
 };
 
 #endif

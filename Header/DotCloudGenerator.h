@@ -1,7 +1,9 @@
 #ifndef DOTCLOUDGENERATOR_H
 #define DOTCLOUDGENERATOR_H
 
-#include "DotList.h"
+#include "Vector3D.h"
+
+using namespace std;
 
 class DotCloudGenerator
 {
@@ -9,7 +11,7 @@ private:
     Vector3D* GetRandomDot();
     Vector3D* GetRandomDotEvenlyDistributed();
 public:
-    DotList* GetSphericalDots();
+    vector<Vector3D*> GetSphericalDots();
 };
 
 #endif

@@ -16,12 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Source\Vector3D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\DotList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\DotCloudGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -31,20 +25,17 @@
     <ClCompile Include="Source\Visualization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\TriangleList.cpp">
+    <ClCompile Include="Source\Triangle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Triangle.cpp">
+    <ClCompile Include="Source\DelaunayTriangulation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vector3D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Header\Vector3D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\DotList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Header\DotCloudGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,10 +45,13 @@
     <ClInclude Include="Header\Visualization.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Header\TriangleList.h">
+    <ClInclude Include="Header\Triangle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Header\Triangle.h">
+    <ClInclude Include="Header\DelaunayTriangulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Header\Vector3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

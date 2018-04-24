@@ -1,3 +1,4 @@
+#include <vector>
 #include <vtkTriangle.h>
 #include <vtkCellArray.h>
 #include <vtkPointData.h>
@@ -11,36 +12,36 @@
 #include <vtkInteractorStyleTrackballCamera.h>
 #include "../Header/Visualization.h"
 
-void Visualization::ReconstructIn3D(DotList* dots, TriangleList* mesh)
+void Visualization::ReconstructIn3D(vector<Vector3D*> dots, vector<Triangle*> mesh)
 {
     vtkPoints* points = vtkPoints::New();
     vtkUnsignedCharArray* colors = vtkUnsignedCharArray::New();
-    vtkCellArray* triangles = vtkCellArray::New();
+    vtkCellArray* cells = vtkCellArray::New();
 
     colors->SetNumberOfComponents(3);
     colors->SetName("Colors");
 
-    Vector3D* point;
-    vtkTriangle* triangle;
-
-    dots->ResetCur();
-    do
+    vector<Vector3D*>::iterator itDots;
+    for (itDots = dots.begin(); itDots != dots.end(); itDots++)
     {
-        point = dots->GetCurDot();
-        points->InsertNextPoint(point->X, point->Y, point->Z);
-        colors->InsertNextTuple3(point->R, point->G, point->B);
-    } while (dots->MoveToNext());
+        Vector3D* dot = *itDots;
+        points->InsertNextPoint(dot->X, dot->Y, dot->Z);
+        colors->InsertNextTuple3(dot->R, dot->G, dot->B);
+    }
 
-    mesh->ResetCur();
-    do
+    vtkTriangle* vtkTriangle;
+    vector<Triangle*>::iterator itMesh;
+    for (itMesh = mesh.begin(); itMesh != mesh.end(); itMesh++)
     {
-        triangle = vtkTriangle::New();
-        triangle->GetPointIds()->SetId(0, mesh->GetCurVerticesID(0));
-        triangle->GetPointIds()->SetId(1, mesh->GetCurVerticesID(1));
-        triangle->GetPointIds()->SetId(2, mesh->GetCurVerticesID(2));
+        Triangle* triangle = *itMesh;
 
-        triangles->InsertNextCell(triangle);
-    } while (mesh->MoveToNext());
+        vtkTriangle = vtkTriangle::New();
+        vtkTriangle->GetPointIds()->SetId(0, triangle->GetVertexDotId(0));
+        vtkTriangle->GetPointIds()->SetId(1, triangle->GetVertexDotId(1));
+        vtkTriangle->GetPointIds()->SetId(2, triangle->GetVertexDotId(2));
+
+        cells->InsertNextCell(vtkTriangle);
+    }
 
     vtkRenderer* renderer = vtkRenderer::New();
     vtkRenderWindow* renderWindow = vtkRenderWindow::New();
@@ -57,7 +58,7 @@ void Visualization::ReconstructIn3D(DotList* dots, TriangleList* mesh)
     vtkPolyData* trianglePolyData = vtkPolyData::New();
 
     trianglePolyData->SetPoints(points);
-    trianglePolyData->SetPolys(triangles);
+    trianglePolyData->SetPolys(cells);
     trianglePolyData->GetPointData()->SetScalars(colors);
 
     vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
@@ -65,7 +66,7 @@ void Visualization::ReconstructIn3D(DotList* dots, TriangleList* mesh)
 
     vtkActor* actor = vtkActor::New();
     actor->SetMapper(mapper);
-    //actor->GetProperty()->SetRepresentationToWireframe();
+    actor->GetProperty()->SetRepresentationToWireframe();
 
     renderer->AddActor(actor);
 

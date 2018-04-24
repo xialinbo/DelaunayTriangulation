@@ -1,9 +1,9 @@
-#include <iostream>
 #include <ctime>
+#include <iostream>
+#include <vector>
 #include "Header/DotCloudGenerator.h"
 #include "Header/DotCloudReader.h"
-#include "Header/DotList.h"
-#include "Header/TriangleList.h"
+#include "Header/DelaunayTriangulation.h"
 #include "Header/Visualization.h"
 
 using namespace std;
@@ -12,47 +12,28 @@ int main()
 {
     try
     {
-        DotList* dots = new DotList();
-
-        int inputValue;
+        int cmd;
         cout << "Choose dot cloud source by key in [1/2]:\n 1 = Random generator\n 2 = Dot cloud file\n";
-        cin >> inputValue;
+        cin >> cmd;
 
-        if (inputValue == 1)
-        {
-            DotCloudGenerator* generator = new DotCloudGenerator();
-            dots = generator->GetSphericalDots();
-        }
-        else if (inputValue == 2)
-        {
-            DotCloudReader* reader = new DotCloudReader();
-            dots = reader->GetDotCloud();
-        }
+        vector<Vector3D*> dots
+            = cmd == 1
+            ? DotCloudGenerator().GetSphericalDots()
+            : DotCloudReader().GetDotCloud();
 
         clock_t then = clock();
-        TriangleList* mesh = new TriangleList();
-        do
-        {
-            mesh->InsertDot(dots->GetCurDot());
-        } while (dots->MoveToNext());
-
-        mesh->RemoveExtraTriangle();
+        vector<Triangle*> mesh = DelaunayTriangulation().GetTriangulationResult(dots);
 
         cout << "Triangulation: " << clock() - then << "ms" << endl;
 
         then = clock();
-        Visualization* vtk = new Visualization();
-        vtk->ReconstructIn3D(dots, mesh);
+        Visualization().ReconstructIn3D(dots, mesh);
         cout << "Render:  " << clock() - then << "ms" << endl;
-
-        delete dots;
-        delete mesh;
     }
-    catch (exception* e)
+    catch (exception e)
     {
-        cout << e->what();
+        cout << e.what();
     }
 
-    std::system("pause");
     return 0;
 }

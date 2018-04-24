@@ -119,18 +119,16 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Source\DotCloudReader.cpp" />
     <ClCompile Include="Source\Triangle.cpp" />
-    <ClCompile Include="Source\TriangleList.cpp" />
+    <ClCompile Include="Source\DelaunayTriangulation.cpp" />
     <ClCompile Include="Source\DotCloudGenerator.cpp" />
-    <ClCompile Include="Source\DotList.cpp" />
     <ClCompile Include="Source\Vector3D.cpp" />
     <ClCompile Include="Source\Visualization.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\DotCloudReader.h" />
     <ClInclude Include="Header\Triangle.h" />
-    <ClInclude Include="Header\TriangleList.h" />
+    <ClInclude Include="Header\DelaunayTriangulation.h" />
     <ClInclude Include="Header\DotCloudGenerator.h" />
-    <ClInclude Include="Header\DotList.h" />
     <ClInclude Include="Header\Vector3D.h" />
     <ClInclude Include="Header\Visualization.h" />
   </ItemGroup>

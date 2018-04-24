@@ -1,12 +1,14 @@
 #ifndef DOTCLOUDREADER_H
 #define DOTCLOUDREADER_H
 
-#include "DotList.h"
+#include "Vector3D.h"
+
+using namespace std;
 
 class DotCloudReader
 {
 public:
-    DotList* GetDotCloud();
+    vector<Vector3D*> GetDotCloud();
 };
 
 #endif

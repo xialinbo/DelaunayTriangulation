@@ -1,15 +1,14 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string>
+#include <vector>
 #include "../Header/DotCloudReader.h"
 
 #define PI 3.14159265
 
-using namespace std;
-
-DotList* DotCloudReader::GetDotCloud()
+vector<Vector3D*> DotCloudReader::GetDotCloud()
 {
-    DotList* dots = new DotList;
+    vector<Vector3D*> dots = vector<Vector3D*>();
 
     string filename;
     cout << "Enter name of file in resource directory: ";
@@ -25,7 +24,7 @@ DotList* DotCloudReader::GetDotCloud()
     while (file >> hex)
     {
         file >> x >> y >> z >> red >> green >> blue;
-        dots->AddDot(new Vector3D(x, y, z, red, green, blue));
+        dots.push_back(new Vector3D(x, y, z, red, green, blue));
     }
 
     file.close();
