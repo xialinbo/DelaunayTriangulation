@@ -5,10 +5,9 @@ Delaunay triangulation in 3D space, to reconstruct convex hull from spherical do
 ## Getting Started
 1. Change solution configuration to release mode(VTK lib in this project only support release mode).<br />
 2. Build to restore VTK package from nuget.org, compile and run.<br />
-3. From command window, you can choose to use random dot cloud generator or import your own dot cloud file (format refer to sample file).
-```
-Random dot cloud generator will also save a dot cloud file to Resource folder when executing.
-```
+3. From command window, you can choose to use random dot cloud generator or import your own dot cloud file.
+    1. You can refer to sample.txt for file format: "# x y z Red Green Blue"
+    2. Random dot cloud generator will also save a dot cloud file to Resource folder when executing.
 4. Sample output:<br>
 ![Sample output](https://github.com/xialinbo/DelaunayTriangulation/blob/master/SampleResult.png "Done.")
 
