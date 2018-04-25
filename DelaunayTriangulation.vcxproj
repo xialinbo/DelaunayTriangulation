@@ -135,9 +135,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="Resource\sphere.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\vtk_static_vc141-x64-release.8.0.1\build\native\vtk_static_vc141-x64-release.targets" Condition="Exists('packages\vtk_static_vc141-x64-release.8.0.1\build\native\vtk_static_vc141-x64-release.targets')" />

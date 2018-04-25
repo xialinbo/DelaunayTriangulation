@@ -5,10 +5,11 @@
 #include "../Header/DotCloudGenerator.h"
 
 #define PI 3.14159265
+#define RADIUS 100
 
-vector<Vector3D*> DotCloudGenerator::GetSphericalDots()
+vector<Vector3D*>* DotCloudGenerator::GetSphericalDots()
 {
-    vector<Vector3D*> dots = vector<Vector3D*>();
+    vector<Vector3D*>* dots = new vector<Vector3D*>();
     ofstream file("Resource\\random_out.txt");
 
     int dotCount;
@@ -21,7 +22,8 @@ vector<Vector3D*> DotCloudGenerator::GetSphericalDots()
         Vector3D* dot = GetRandomDotEvenlyDistributed();
         file << "# " << dot->X << " " << dot->Y << " " << dot->Z << " "
             << dot->R << " " << dot->G << " " << dot->B << " " << endl;
-        dots.push_back(dot);
+        dot->Id = dots->size();
+        dots->push_back(dot);
     }
 
     file.close();
@@ -35,9 +37,9 @@ Vector3D* DotCloudGenerator::GetRandomDot()
     double phi = (rand() % 360) * PI / 180;
     double theta = (rand() % 360) * PI / 180;
 
-    double x = 1 * sin(theta) * cos(phi);
-    double y = 1 * sin(theta) * sin(phi);
-    double z = 1 * cos(theta);
+    double x = RADIUS * sin(theta) * cos(phi);
+    double y = RADIUS * sin(theta) * sin(phi);
+    double z = RADIUS * cos(theta);
 
     return new Vector3D(x, y, z);
 }
@@ -50,9 +52,9 @@ Vector3D* DotCloudGenerator::GetRandomDotEvenlyDistributed()
     double z = rand() % 2000 - 1000;
 
     double r = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
-    x = x / r;
-    y = y / r;
-    z = z / r;
+    x = RADIUS * x / r;
+    y = RADIUS * y / r;
+    z = RADIUS * z / r;
 
     return new Vector3D(x, y, z);
 }

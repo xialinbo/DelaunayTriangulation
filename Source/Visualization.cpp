@@ -12,7 +12,7 @@
 #include <vtkInteractorStyleTrackballCamera.h>
 #include "../Header/Visualization.h"
 
-void Visualization::ReconstructIn3D(vector<Vector3D*> dots, vector<Triangle*> mesh)
+void Visualization::ReconstructIn3D(vector<Vector3D*>* dots, vector<Triangle*>* mesh)
 {
     vtkPoints* points = vtkPoints::New();
     vtkUnsignedCharArray* colors = vtkUnsignedCharArray::New();
@@ -22,7 +22,7 @@ void Visualization::ReconstructIn3D(vector<Vector3D*> dots, vector<Triangle*> me
     colors->SetName("Colors");
 
     vector<Vector3D*>::iterator itDots;
-    for (itDots = dots.begin(); itDots != dots.end(); itDots++)
+    for (itDots = dots->begin(); itDots != dots->end(); itDots++)
     {
         Vector3D* dot = *itDots;
         points->InsertNextPoint(dot->X, dot->Y, dot->Z);
@@ -31,7 +31,7 @@ void Visualization::ReconstructIn3D(vector<Vector3D*> dots, vector<Triangle*> me
 
     vtkTriangle* vtkTriangle;
     vector<Triangle*>::iterator itMesh;
-    for (itMesh = mesh.begin(); itMesh != mesh.end(); itMesh++)
+    for (itMesh = mesh->begin(); itMesh != mesh->end(); itMesh++)
     {
         Triangle* triangle = *itMesh;
 
@@ -66,7 +66,7 @@ void Visualization::ReconstructIn3D(vector<Vector3D*> dots, vector<Triangle*> me
 
     vtkActor* actor = vtkActor::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetRepresentationToWireframe();
+    //actor->GetProperty()->SetRepresentationToWireframe();
 
     renderer->AddActor(actor);
 

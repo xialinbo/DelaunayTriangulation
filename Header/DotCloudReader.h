@@ -8,7 +8,7 @@ using namespace std;
 class DotCloudReader
 {
 public:
-    vector<Vector3D*> GetDotCloud();
+    vector<Vector3D*>* GetDotCloud();
 };
 
 #endif
