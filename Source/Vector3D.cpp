@@ -7,11 +7,6 @@ Vector3D::Vector3D(double x, double y, double z, int r, int g, int b)
     Y = y;
     Z = z;
 
-    double radius = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
-    Xp = x / radius;
-    Yp = y / radius;
-    Zp = z / radius;
-
     R = r;
     G = g;
     B = b;
@@ -19,22 +14,32 @@ Vector3D::Vector3D(double x, double y, double z, int r, int g, int b)
 
 Vector3D::Vector3D(double x, double y, double z, bool isAuxiliaryDot, int r, int g, int b)
 {
+    IsAuxiliaryDot = isAuxiliaryDot;
+
     X = x;
     Y = y;
     Z = z;
-
-    IsAuxiliaryDot = isAuxiliaryDot;
-
-    double radius = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
-    Xp = x / radius;
-    Yp = y / radius;
-    Zp = z / radius;
 
     R = r;
     G = g;
     B = b;
 }
 
+Vector3D::Vector3D(Vector3D* dot, double radius)
+{
+    Id = dot->Id;
+    IsVisited = dot->IsVisited;
+    IsAuxiliaryDot = dot->IsAuxiliaryDot;
+
+    double l = sqrt(pow(dot->X, 2) + pow(dot->Y, 2) + pow(dot->Z, 2));
+    X = radius * dot->X / l;
+    Y = radius * dot->Y / l;
+    Z = radius * dot->Z / l;
+
+    R = dot->R;
+    G = dot->G;
+    B = dot->B;
+}
 
 Vector3D::~Vector3D()
 {

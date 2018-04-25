@@ -34,12 +34,12 @@ vector<Triangle*>* DelaunayTriangulation::GetTriangulationResult(vector<Vector3D
 void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
 {
     // prepare initial convex hull with 6 vertices and 8 triangle faces
-    _AuxiliaryDot[0] = new Vector3D(1, 0, 0, true, 0, 0, 0);
-    _AuxiliaryDot[1] = new Vector3D(0, 0, 1, true, 0, 0, 0);
-    _AuxiliaryDot[2] = new Vector3D(-1, 0, 0, true, 0, 0, 0);
-    _AuxiliaryDot[3] = new Vector3D(0, 0, -1, true, 0, 0, 0);
-    _AuxiliaryDot[4] = new Vector3D(0, 1, 0, true, 0, 0, 0);
-    _AuxiliaryDot[5] = new Vector3D(0, -1, 0, true, 0, 0, 0);
+    _AuxiliaryDots[0] = new Vector3D(1, 0, 0, true, 0, 0, 0);
+    _AuxiliaryDots[1] = new Vector3D(0, 0, 1, true, 0, 0, 0);
+    _AuxiliaryDots[2] = new Vector3D(-1, 0, 0, true, 0, 0, 0);
+    _AuxiliaryDots[3] = new Vector3D(0, 0, -1, true, 0, 0, 0);
+    _AuxiliaryDots[4] = new Vector3D(0, 1, 0, true, 0, 0, 0);
+    _AuxiliaryDots[5] = new Vector3D(0, -1, 0, true, 0, 0, 0);
 
     Vector3D* initialVertices[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
     double minDistance[INIT_VERTICES_COUNT];
@@ -50,7 +50,7 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
         double distance[INIT_VERTICES_COUNT];
         for (int i = 0; i < INIT_VERTICES_COUNT; i++)
         {
-            distance[i] = GetDistance(_AuxiliaryDot[i], *it);
+            distance[i] = GetDistance(_AuxiliaryDots[i], *it);
             if (minDistance[i] == 0 || distance[i] < minDistance[i])
             {
                 minDistance[i] = distance[i];
@@ -71,7 +71,7 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
         // use input dots to construct initial hull
         // otherwise use auxiliary dot to construct initial hull
         _InitialVertices[i] = initialVertices[i] != nullptr 
-            ? initialVertices[i] : _AuxiliaryDot[i];
+            ? initialVertices[i] : _AuxiliaryDots[i];
 
         _InitialVertices[i]->IsVisited = true;
     }
@@ -213,17 +213,17 @@ void DelaunayTriangulation::DoLocalOptimization(Triangle* t1, Triangle* t2)
         }
 
         double matrix[] = {
-            t2->Vertex[i]->Xp - t1->Vertex[0]->Xp,
-            t2->Vertex[i]->Yp - t1->Vertex[0]->Yp,
-            t2->Vertex[i]->Zp - t1->Vertex[0]->Zp,
+            t2->Vertex[i]->X - t1->Vertex[0]->X,
+            t2->Vertex[i]->Y - t1->Vertex[0]->Y,
+            t2->Vertex[i]->Z - t1->Vertex[0]->Z,
 
-            t2->Vertex[i]->Xp - t1->Vertex[1]->Xp,
-            t2->Vertex[i]->Yp - t1->Vertex[1]->Yp,
-            t2->Vertex[i]->Zp - t1->Vertex[1]->Zp,
+            t2->Vertex[i]->X - t1->Vertex[1]->X,
+            t2->Vertex[i]->Y - t1->Vertex[1]->Y,
+            t2->Vertex[i]->Z - t1->Vertex[1]->Z,
 
-            t2->Vertex[i]->Xp - t1->Vertex[2]->Xp,
-            t2->Vertex[i]->Yp - t1->Vertex[2]->Yp,
-            t2->Vertex[i]->Zp - t1->Vertex[2]->Zp
+            t2->Vertex[i]->X - t1->Vertex[2]->X,
+            t2->Vertex[i]->Y - t1->Vertex[2]->Y,
+            t2->Vertex[i]->Z - t1->Vertex[2]->Z
         };
 
         if (GetDeterminant(matrix) <= 0)
@@ -291,17 +291,17 @@ bool DelaunayTriangulation::IsMinimumValueInArray(double arr[], int length, int 
 
 double DelaunayTriangulation::GetDistance(Vector3D* v1, Vector3D* v2)
 {
-    return sqrt(pow((v1->Xp - v2->Xp), 2) +
-        pow((v1->Yp - v2->Yp), 2) +
-        pow((v1->Zp - v2->Zp), 2));
+    return sqrt(pow((v1->X - v2->X), 2) +
+        pow((v1->Y - v2->Y), 2) +
+        pow((v1->Z - v2->Z), 2));
 }
 
 double DelaunayTriangulation::GetDeterminant(Vector3D* v1, Vector3D* v2, Vector3D* v3)
 {
     double matrix[] = {
-        v1->Xp, v1->Yp, v1->Zp,
-        v2->Xp, v2->Yp, v2->Zp,
-        v3->Xp, v3->Yp, v3->Zp
+        v1->X, v1->Y, v1->Z,
+        v2->X, v2->Y, v2->Z,
+        v3->X, v3->Y, v3->Z
     };
 
     return GetDeterminant(matrix);
