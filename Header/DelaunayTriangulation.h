@@ -9,8 +9,6 @@ class DelaunayTriangulation
 {
 private:
     vector<Triangle*>* _Mesh;
-    Vector3D* _InitialVertices[6];
-    Vector3D* _AuxiliaryDots[6];
 
     void BuildInitialHull(vector<Vector3D*>*);
     void InsertDot(Vector3D*);

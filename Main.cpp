@@ -21,21 +21,29 @@ int main()
             ? DotCloudGenerator().GetSphericalDots()
             : DotCloudReader().GetDotCloud();
 
-        vector<Vector3D*>* projectedDots = new vector<Vector3D*>();
-        vector<Vector3D*>::iterator it;
-        for (it = dots->begin(); it != dots->end(); it++)
-        {
-            Vector3D* projectedDot = new Vector3D((*it), 100);
-            projectedDots->push_back(projectedDot);
-        }
-
         clock_t then = clock();
-        vector<Triangle*>* mesh = DelaunayTriangulation().GetTriangulationResult(projectedDots);
+        vector<Triangle*>* mesh = DelaunayTriangulation().GetTriangulationResult(dots);
         cout << "Triangulation: " << clock() - then << "ms" << endl;
 
         then = clock();
         Visualization().ReconstructIn3D(dots, mesh);
         cout << "Render:  " << clock() - then << "ms" << endl;
+
+        vector<Vector3D*>::iterator itDots;
+        for (itDots = dots->begin(); itDots != dots->end(); itDots++)
+        {
+            delete *itDots;
+        }
+
+        vector<Triangle*>::iterator itMesh;
+        for (itMesh = mesh->begin(); itMesh != mesh->end(); itMesh++)
+        {
+            /*for (int i = 0; i < 3; i++)
+            {
+                delete (*itMesh)->Vertex[i];
+            }*/
+            delete *itMesh;
+        }
 
         delete mesh;
         delete dots;

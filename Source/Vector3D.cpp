@@ -25,16 +25,18 @@ Vector3D::Vector3D(double x, double y, double z, bool isAuxiliaryDot, int r, int
     B = b;
 }
 
-Vector3D::Vector3D(Vector3D* dot, double radius)
+Vector3D::Vector3D(Vector3D* dot, double lengthAfterProjection)
 {
     Id = dot->Id;
     IsVisited = dot->IsVisited;
     IsAuxiliaryDot = dot->IsAuxiliaryDot;
 
-    double l = sqrt(pow(dot->X, 2) + pow(dot->Y, 2) + pow(dot->Z, 2));
-    X = radius * dot->X / l;
-    Y = radius * dot->Y / l;
-    Z = radius * dot->Z / l;
+    double length = sqrt(pow(dot->X, 2) + pow(dot->Y, 2) + pow(dot->Z, 2));
+    double scaleFactor = lengthAfterProjection / length;
+
+    X = scaleFactor * dot->X;
+    Y = scaleFactor * dot->Y;
+    Z = scaleFactor * dot->Z;
 
     R = dot->R;
     G = dot->G;

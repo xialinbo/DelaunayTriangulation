@@ -2,6 +2,8 @@
 #include "../Header/DelaunayTriangulation.h"
 
 #define INIT_VERTICES_COUNT 6
+#define INIT_FACES_COUNT 8
+#define RADIUS 1
 
 DelaunayTriangulation::DelaunayTriangulation()
 {
@@ -14,13 +16,22 @@ DelaunayTriangulation::~DelaunayTriangulation()
 
 vector<Triangle*>* DelaunayTriangulation::GetTriangulationResult(vector<Vector3D*>* dots)
 {
-    BuildInitialHull(dots);
-
+    // project dots to an unit shpere for triangulation
+    vector<Vector3D*>* projectedDots = new vector<Vector3D*>();
     vector<Vector3D*>::iterator it;
     for (it = dots->begin(); it != dots->end(); it++)
     {
+        Vector3D* projectedDot = new Vector3D((*it), RADIUS);
+        projectedDots->push_back(projectedDot);
+    }
+
+    // prepare initial convex hull with 6 vertices and 8 triangle faces
+    BuildInitialHull(projectedDots);
+
+    for (it = projectedDots->begin(); it != projectedDots->end(); it++)
+    {
         Vector3D* dot = *it;
-        if (!dot->IsVisited)
+        if (!dot->IsVisited && !dot->IsAuxiliaryDot)
         {
             InsertDot(dot);
         }
@@ -28,29 +39,37 @@ vector<Triangle*>* DelaunayTriangulation::GetTriangulationResult(vector<Vector3D
 
     RemoveExtraTriangles();
 
+    delete projectedDots;
+
     return _Mesh;
 }
 
 void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
 {
-    // prepare initial convex hull with 6 vertices and 8 triangle faces
-    _AuxiliaryDots[0] = new Vector3D(1, 0, 0, true, 0, 0, 0);
-    _AuxiliaryDots[1] = new Vector3D(0, 0, 1, true, 0, 0, 0);
-    _AuxiliaryDots[2] = new Vector3D(-1, 0, 0, true, 0, 0, 0);
-    _AuxiliaryDots[3] = new Vector3D(0, 0, -1, true, 0, 0, 0);
-    _AuxiliaryDots[4] = new Vector3D(0, 1, 0, true, 0, 0, 0);
-    _AuxiliaryDots[5] = new Vector3D(0, -1, 0, true, 0, 0, 0);
+    Vector3D* initialVertices[INIT_VERTICES_COUNT];
+    Triangle* initialHullFaces[INIT_FACES_COUNT];
 
-    Vector3D* initialVertices[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-    double minDistance[INIT_VERTICES_COUNT];
+    Vector3D* auxiliaryDots[INIT_VERTICES_COUNT];
+    for (int i = 0; i < INIT_VERTICES_COUNT; i++)
+    {
+        auxiliaryDots[i] = new Vector3D(
+            (i % 2 == 0 ? 1 : -1) * (i / 2 == 0 ? RADIUS : 0),
+            (i % 2 == 0 ? 1 : -1) * (i / 2 == 1 ? RADIUS : 0),
+            (i % 2 == 0 ? 1 : -1) * (i / 2 == 2 ? RADIUS : 0),
+            true, 0, 0, 0
+        );
 
+        initialVertices[i] = auxiliaryDots[i];
+    }
+
+    double minDistance[INIT_VERTICES_COUNT] = { 0, 0, 0, 0, 0, 0 };
     vector<Vector3D*>::iterator it;
     for (it = dots->begin(); it != dots->end(); it++)
     {
         double distance[INIT_VERTICES_COUNT];
         for (int i = 0; i < INIT_VERTICES_COUNT; i++)
         {
-            distance[i] = GetDistance(_AuxiliaryDots[i], *it);
+            distance[i] = GetDistance(auxiliaryDots[i], *it);
             if (minDistance[i] == 0 || distance[i] < minDistance[i])
             {
                 minDistance[i] = distance[i];
@@ -61,6 +80,7 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
         {
             if (minDistance[i] == distance[i] && IsMinimumValueInArray(distance, INIT_VERTICES_COUNT, i))
             {
+                // if close enough, use input dot to replace auxiliary dots for initial hull construction
                 initialVertices[i] = *it;
             }
         }
@@ -68,21 +88,22 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
 
     for (int i = 0; i < INIT_VERTICES_COUNT; i++)
     {
-        // use input dots to construct initial hull
-        // otherwise use auxiliary dot to construct initial hull
-        _InitialVertices[i] = initialVertices[i] != nullptr 
-            ? initialVertices[i] : _AuxiliaryDots[i];
-
-        _InitialVertices[i]->IsVisited = true;
+        if (!initialVertices[i]->IsAuxiliaryDot)
+        {
+            // avoid being visited by InsertDot() again
+            initialVertices[i]->IsVisited = true;
+        }
     }
 
-    Triangle* initialHullFaces[8];
+    int vertex0Index[] = { 0, 0, 0, 0, 1, 1, 1, 1 };
+    int vertex1Index[] = { 4, 3, 5, 2, 2, 4, 3, 5 };
+    int vertex2Index[] = { 2, 4, 3, 5, 4, 3, 5, 2 };
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < INIT_FACES_COUNT; i++)
     {
-        Vector3D* v0 = i < 4 ? _InitialVertices[4] : _InitialVertices[5];
-        Vector3D* v1 = i < 4 ? _InitialVertices[i] : _InitialVertices[(i - 3) % 4];
-        Vector3D* v2 = i < 4 ? _InitialVertices[(i + 1) % 4] : _InitialVertices[(i - 4)];
+        Vector3D* v0 = initialVertices[vertex0Index[i]];
+        Vector3D* v1 = initialVertices[vertex1Index[i]];
+        Vector3D* v2 = initialVertices[vertex2Index[i]];
 
         Triangle* triangle = new Triangle(v0, v1, v2);
         initialHullFaces[i] = triangle;
@@ -90,12 +111,22 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
         _Mesh->push_back(triangle);
     }
 
-    for (int i = 0; i < 8; i++)
+    int neighbor0Index[] = { 1, 2, 3, 0, 7, 4, 5, 6 };
+    int neighbor1Index[] = { 4, 5, 6, 7, 0, 1, 2, 3 };
+    int neighbor2Index[] = { 3, 0, 1, 2, 5, 6, 7, 4 };
+
+    for (int i = 0; i < INIT_FACES_COUNT; i++)
     {
-        Triangle* n0 = i < 4 ? initialHullFaces[(i + 3) % 4] : initialHullFaces[(i - 3) % 4 + 4];
-        Triangle* n1 = i < 4 ? initialHullFaces[i + 4] : initialHullFaces[i - 4];
-        Triangle* n2 = i < 4 ? initialHullFaces[(i + 1) % 4] : initialHullFaces[(i - 1) % 4 + 4];
+        Triangle* n0 = initialHullFaces[neighbor0Index[i]];
+        Triangle* n1 = initialHullFaces[neighbor1Index[i]];
+        Triangle* n2 = initialHullFaces[neighbor2Index[i]];
         initialHullFaces[i]->AssignNeighbors(n0, n1, n2);
+    }
+
+    for (int i = 0; i < INIT_VERTICES_COUNT; i++)
+    {
+        auxiliaryDots[i]->Id = dots->size();
+        dots->push_back(auxiliaryDots[i]);
     }
 }
 
@@ -129,11 +160,11 @@ void DelaunayTriangulation::InsertDot(Vector3D* dot)
             triangle = triangle->Neighbor[2];
 
         // cannot determine effectively 
-        else if (det_1>0)
+        else if (det_1 > 0)
             triangle = triangle->Neighbor[1];
-        else if (det_2>0)
+        else if (det_2 > 0)
             triangle = triangle->Neighbor[2];
-        else if (det_3>0)
+        else if (det_3 > 0)
             triangle = triangle->Neighbor[0];
         else
             triangle = *it++;
@@ -152,12 +183,16 @@ void DelaunayTriangulation::RemoveExtraTriangles()
             if (triangle->Vertex[i]->IsAuxiliaryDot)
             {
                 isExtraTriangle = true;
-                it = _Mesh->erase(it);
                 break;
             }
         }
 
-        if (!isExtraTriangle)
+        if (isExtraTriangle)
+        {
+            delete *it;
+            it = _Mesh->erase(it);
+        }
+        else
         {
             it++;
         }
@@ -191,7 +226,7 @@ void DelaunayTriangulation::SplitTriangle(Vector3D* dot, Triangle* triangle)
 
 void DelaunayTriangulation::FixNeighborhood(Triangle* target, Triangle* oldNeighbor, Triangle* newNeighbor)
 {
-    for (int i = 0; i<3; i++)
+    for (int i = 0; i < 3; i++)
     {
         if (target->Neighbor[i] == oldNeighbor)
         {
@@ -203,7 +238,7 @@ void DelaunayTriangulation::FixNeighborhood(Triangle* target, Triangle* oldNeigh
 
 void DelaunayTriangulation::DoLocalOptimization(Triangle* t1, Triangle* t2)
 {
-    for (int i = 0; i<3; i++)
+    for (int i = 0; i < 3; i++)
     {
         if (t2->Vertex[i] == t1->Vertex[0] ||
             t2->Vertex[i] == t1->Vertex[1] ||
@@ -241,9 +276,9 @@ void DelaunayTriangulation::DoLocalOptimization(Triangle* t1, Triangle* t2)
 
 bool DelaunayTriangulation::TrySwapDiagonal(Triangle * t1, Triangle * t2)
 {
-    for (int j = 0; j<3; j++)
+    for (int j = 0; j < 3; j++)
     {
-        for (int k = 0; k<3; k++)
+        for (int k = 0; k < 3; k++)
         {
             if (t1->Vertex[j] != t2->Vertex[0] &&
                 t1->Vertex[j] != t2->Vertex[1] &&
