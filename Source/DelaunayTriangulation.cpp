@@ -7,30 +7,44 @@
 
 DelaunayTriangulation::DelaunayTriangulation()
 {
+    _ProjectedDots = new vector<Vector3D*>();
     _Mesh = new vector<Triangle*>();
 }
 
 DelaunayTriangulation::~DelaunayTriangulation()
 {
+    vector<Vector3D*>::iterator itDots;
+    for (itDots = _ProjectedDots->begin(); itDots != _ProjectedDots->end(); itDots++)
+    {
+        delete *itDots;
+    }
+
+    vector<Triangle*>::iterator itMesh;
+    for (itMesh = _Mesh->begin(); itMesh != _Mesh->end(); itMesh++)
+    {
+        delete *itMesh;
+    }
+
+    delete _ProjectedDots;
+    delete _Mesh;
 }
 
-vector<Triangle*>* DelaunayTriangulation::GetTriangulationResult(vector<Vector3D*>* dots)
+vector<vector<int>> DelaunayTriangulation::GetTriangulationResult(vector<Vector3D*> dots)
 {
     // project dots to an unit shpere for triangulation
-    vector<Vector3D*>* projectedDots = new vector<Vector3D*>();
-    vector<Vector3D*>::iterator it;
-    for (it = dots->begin(); it != dots->end(); it++)
+    vector<Vector3D*>::iterator itDots;
+    for (itDots = dots.begin(); itDots != dots.end(); itDots++)
     {
-        Vector3D* projectedDot = new Vector3D((*it), RADIUS);
-        projectedDots->push_back(projectedDot);
+        Vector3D* projectedDot = new Vector3D((*itDots), RADIUS);
+        _ProjectedDots->push_back(projectedDot);
     }
 
     // prepare initial convex hull with 6 vertices and 8 triangle faces
-    BuildInitialHull(projectedDots);
+    BuildInitialHull(_ProjectedDots);
 
-    for (it = projectedDots->begin(); it != projectedDots->end(); it++)
+    for (itDots = _ProjectedDots->begin(); itDots != _ProjectedDots->end(); itDots++)
     {
-        Vector3D* dot = *it;
+        Vector3D* dot = *itDots;
         if (!dot->IsVisited && !dot->IsAuxiliaryDot)
         {
             InsertDot(dot);
@@ -39,9 +53,21 @@ vector<Triangle*>* DelaunayTriangulation::GetTriangulationResult(vector<Vector3D
 
     RemoveExtraTriangles();
 
-    delete projectedDots;
+    vector<vector<int>> mesh = vector<vector<int>>();
+    vector<Triangle*>::iterator itMesh;
+    for (itMesh = _Mesh->begin(); itMesh != _Mesh->end(); itMesh++)
+    {
+        Triangle* triangle = *itMesh;
+        vector<int> verticesIds = vector<int>
+        {
+            triangle->Vertex[0]->Id,
+            triangle->Vertex[1]->Id,
+            triangle->Vertex[2]->Id
+        };
+        mesh.push_back(verticesIds);
+    }
 
-    return _Mesh;
+    return mesh;
 }
 
 void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)

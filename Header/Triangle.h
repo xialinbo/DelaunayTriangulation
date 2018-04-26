@@ -16,7 +16,6 @@ public:
     ~Triangle();
 
     void AssignNeighbors(Triangle*, Triangle*, Triangle*);
-    int GetVertexDotId(int);
 };
 
 #endif

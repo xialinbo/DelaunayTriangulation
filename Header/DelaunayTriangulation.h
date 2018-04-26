@@ -8,6 +8,7 @@ using namespace std;
 class DelaunayTriangulation
 {
 private:
+    vector<Vector3D*>* _ProjectedDots;
     vector<Triangle*>* _Mesh;
 
     void BuildInitialHull(vector<Vector3D*>*);
@@ -26,7 +27,7 @@ public:
     DelaunayTriangulation();
     ~DelaunayTriangulation();
 
-    vector<Triangle*>* GetTriangulationResult(vector<Vector3D*>*);
+    vector<vector<int>> GetTriangulationResult(vector<Vector3D*>);
 };
 
 #endif

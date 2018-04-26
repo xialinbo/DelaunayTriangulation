@@ -11,7 +11,7 @@ private:
     Vector3D* GetRandomDot();
     Vector3D* GetRandomDotEvenlyDistributed();
 public:
-    vector<Vector3D*>* GetSphericalDots();
+    vector<Vector3D*> GetSphericalDots();
 };
 
 #endif

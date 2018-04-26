@@ -17,8 +17,3 @@ void Triangle::AssignNeighbors(Triangle* n0, Triangle* n1, Triangle* n2)
     Neighbor[1] = n1;
     Neighbor[2] = n2;
 }
-
-int Triangle::GetVertexDotId(int index)
-{
-    return Vertex[index]->Id;
-}

@@ -7,9 +7,9 @@
 #define PI 3.14159265
 #define RADIUS 100
 
-vector<Vector3D*>* DotCloudGenerator::GetSphericalDots()
+vector<Vector3D*> DotCloudGenerator::GetSphericalDots()
 {
-    vector<Vector3D*>* dots = new vector<Vector3D*>();
+    vector<Vector3D*> dots = vector<Vector3D*>();
     ofstream file("Resource\\random_out.txt");
 
     int dotCount;
@@ -22,8 +22,8 @@ vector<Vector3D*>* DotCloudGenerator::GetSphericalDots()
         Vector3D* dot = GetRandomDotEvenlyDistributed();
         file << "# " << dot->X << " " << dot->Y << " " << dot->Z << " "
             << dot->R << " " << dot->G << " " << dot->B << " " << endl;
-        dot->Id = dots->size();
-        dots->push_back(dot);
+        dot->Id = dots.size();
+        dots.push_back(dot);
     }
 
     file.close();
