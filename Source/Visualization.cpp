@@ -1,3 +1,4 @@
+#include <tuple>
 #include <vector>
 #include <vtkTriangle.h>
 #include <vtkCellArray.h>
@@ -12,7 +13,7 @@
 #include <vtkInteractorStyleTrackballCamera.h>
 #include "../Header/Visualization.h"
 
-void Visualization::ReconstructIn3D(vector<Vector3D*> dots, vector<vector<int>> mesh)
+void Visualization::ReconstructIn3D(vector<Vector3D*> &dots, vector<tuple<int, int, int>*> &mesh)
 {
     vtkPoints* points = vtkPoints::New();
     vtkUnsignedCharArray* colors = vtkUnsignedCharArray::New();
@@ -30,15 +31,13 @@ void Visualization::ReconstructIn3D(vector<Vector3D*> dots, vector<vector<int>> 
     }
 
     vtkTriangle* vtkTriangle;
-    vector<vector<int>>::iterator itMesh;
+    vector<tuple<int, int, int>*>::iterator itMesh;
     for (itMesh = mesh.begin(); itMesh != mesh.end(); itMesh++)
     {
-        vector<int> verticesIds = *itMesh;
-
         vtkTriangle = vtkTriangle::New();
-        vtkTriangle->GetPointIds()->SetId(0, verticesIds[0]);
-        vtkTriangle->GetPointIds()->SetId(1, verticesIds[1]);
-        vtkTriangle->GetPointIds()->SetId(2, verticesIds[2]);
+        vtkTriangle->GetPointIds()->SetId(0, get<0>(**itMesh));
+        vtkTriangle->GetPointIds()->SetId(1, get<1>(**itMesh));
+        vtkTriangle->GetPointIds()->SetId(2, get<2>(**itMesh));
 
         cells->InsertNextCell(vtkTriangle);
     }
@@ -75,4 +74,15 @@ void Visualization::ReconstructIn3D(vector<Vector3D*> dots, vector<vector<int>> 
 
     renderWindow->Render();
     renderWindowInteractor->Start();
+
+    points->Delete();
+    colors->Delete();
+    cells->Delete();
+    renderer->Delete();
+    renderWindow->Delete();
+    renderWindowInteractor->Delete();
+    style->Delete();
+    trianglePolyData->Delete();
+    mapper->Delete();
+    actor->Delete();
 }

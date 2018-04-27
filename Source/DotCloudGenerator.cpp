@@ -9,12 +9,13 @@
 
 vector<Vector3D*> DotCloudGenerator::GetSphericalDots()
 {
-    vector<Vector3D*> dots = vector<Vector3D*>();
-    ofstream file("Resource\\random_out.txt");
-
     int dotCount;
     cout << "Dot Count: ";
     cin >> dotCount;
+
+    ofstream file("Resource\\random_out.txt");
+    vector<Vector3D*> dots = vector<Vector3D*>();
+    dots.reserve(dotCount);
 
     srand((unsigned)time(NULL));
     for (int i = 0; i < dotCount; i++)

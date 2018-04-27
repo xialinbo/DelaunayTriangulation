@@ -10,6 +10,7 @@ class DelaunayTriangulation
 private:
     vector<Vector3D*>* _ProjectedDots;
     vector<Triangle*>* _Mesh;
+    int _Statistics[2]; // 0: triangle search operations; 1: local optimizations;
 
     void BuildInitialHull(vector<Vector3D*>*);
     void InsertDot(Vector3D*);
@@ -27,7 +28,8 @@ public:
     DelaunayTriangulation();
     ~DelaunayTriangulation();
 
-    vector<vector<int>> GetTriangulationResult(vector<Vector3D*>);
+    vector<tuple<int, int, int>*> GetTriangulationResult(vector<Vector3D*>&);
+    string GetStatistics();
 };
 
 #endif

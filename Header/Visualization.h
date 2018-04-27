@@ -8,7 +8,7 @@ using namespace std;
 class Visualization
 {
 public:
-    void ReconstructIn3D(vector<Vector3D*>, vector<vector<int>>);
+    void ReconstructIn3D(vector<Vector3D*>&, vector<tuple<int, int, int>*>&);
 };
 
 #endif

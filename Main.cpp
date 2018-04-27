@@ -1,5 +1,6 @@
 #include <ctime>
 #include <iostream>
+#include <string>
 #include <vector>
 #include "Header/DotCloudGenerator.h"
 #include "Header/DotCloudReader.h"
@@ -7,6 +8,8 @@
 #include "Header/Visualization.h"
 
 using namespace std;
+
+void ClearMemory(vector<Vector3D*>&, vector<tuple<int, int, int>*>&);
 
 int main()
 {
@@ -22,18 +25,15 @@ int main()
             : DotCloudReader().GetDotCloud();
 
         clock_t then = clock();
-        vector<vector<int>> mesh = DelaunayTriangulation().GetTriangulationResult(dots);
-        cout << "Triangulation: " << clock() - then << "ms" << endl;
+        DelaunayTriangulation triangulation = DelaunayTriangulation();
+        vector<tuple<int, int, int>*> mesh = triangulation.GetTriangulationResult(dots);
+        cout << triangulation.GetStatistics() << endl;
+        cout << "Triangulation cost: " << clock() - then << "ms" << endl;
 
-        then = clock();
-        Visualization().ReconstructIn3D(dots, mesh);
-        cout << "Render:  " << clock() - then << "ms" << endl;
+        Visualization visualization = Visualization();
+        visualization.ReconstructIn3D(dots, mesh);
 
-        vector<Vector3D*>::iterator it;
-        for (it = dots.begin(); it != dots.end(); it++)
-        {
-            delete *it;
-        }
+        ClearMemory(dots, mesh);
     }
     catch (exception e)
     {
@@ -41,4 +41,19 @@ int main()
     }
 
     return 0;
+}
+
+void ClearMemory(vector<Vector3D*> &dots, vector<tuple<int, int, int>*> &mesh)
+{
+    vector<Vector3D*>::iterator itDots;
+    for (itDots = dots.begin(); itDots != dots.end(); itDots++)
+    {
+        delete *itDots;
+    }
+
+    vector<tuple<int, int, int>*>::iterator itMesh;
+    for (itMesh = mesh.begin(); itMesh != mesh.end(); itMesh++)
+    {
+        delete *itMesh;
+    }
 }

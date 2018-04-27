@@ -1,14 +1,18 @@
+#include <string>
+#include <tuple>
 #include <vector>
 #include "../Header/DelaunayTriangulation.h"
 
 #define INIT_VERTICES_COUNT 6
 #define INIT_FACES_COUNT 8
-#define RADIUS 1
+#define VECTOR_LENGTH 1
 
 DelaunayTriangulation::DelaunayTriangulation()
 {
     _ProjectedDots = new vector<Vector3D*>();
     _Mesh = new vector<Triangle*>();
+    _Statistics[0] = 0;
+    _Statistics[1] = 0;
 }
 
 DelaunayTriangulation::~DelaunayTriangulation()
@@ -29,13 +33,13 @@ DelaunayTriangulation::~DelaunayTriangulation()
     delete _Mesh;
 }
 
-vector<vector<int>> DelaunayTriangulation::GetTriangulationResult(vector<Vector3D*> dots)
+vector<tuple<int, int, int>*> DelaunayTriangulation::GetTriangulationResult(vector<Vector3D*> &dots)
 {
     // project dots to an unit shpere for triangulation
     vector<Vector3D*>::iterator itDots;
     for (itDots = dots.begin(); itDots != dots.end(); itDots++)
     {
-        Vector3D* projectedDot = new Vector3D((*itDots), RADIUS);
+        Vector3D* projectedDot = new Vector3D((*itDots), VECTOR_LENGTH);
         _ProjectedDots->push_back(projectedDot);
     }
 
@@ -53,18 +57,16 @@ vector<vector<int>> DelaunayTriangulation::GetTriangulationResult(vector<Vector3
 
     RemoveExtraTriangles();
 
-    vector<vector<int>> mesh = vector<vector<int>>();
+    vector<tuple<int, int, int>*> mesh = vector<tuple<int, int, int>*>();
     vector<Triangle*>::iterator itMesh;
     for (itMesh = _Mesh->begin(); itMesh != _Mesh->end(); itMesh++)
     {
         Triangle* triangle = *itMesh;
-        vector<int> verticesIds = vector<int>
-        {
+        mesh.push_back(new tuple<int, int, int>(
             triangle->Vertex[0]->Id,
             triangle->Vertex[1]->Id,
             triangle->Vertex[2]->Id
-        };
-        mesh.push_back(verticesIds);
+            ));
     }
 
     return mesh;
@@ -79,9 +81,9 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
     for (int i = 0; i < INIT_VERTICES_COUNT; i++)
     {
         auxiliaryDots[i] = new Vector3D(
-            (i % 2 == 0 ? 1 : -1) * (i / 2 == 0 ? RADIUS : 0),
-            (i % 2 == 0 ? 1 : -1) * (i / 2 == 1 ? RADIUS : 0),
-            (i % 2 == 0 ? 1 : -1) * (i / 2 == 2 ? RADIUS : 0),
+            (i % 2 == 0 ? 1 : -1) * (i / 2 == 0 ? VECTOR_LENGTH : 0),
+            (i % 2 == 0 ? 1 : -1) * (i / 2 == 1 ? VECTOR_LENGTH : 0),
+            (i % 2 == 0 ? 1 : -1) * (i / 2 == 2 ? VECTOR_LENGTH : 0),
             true, 0, 0, 0
         );
 
@@ -166,6 +168,8 @@ void DelaunayTriangulation::InsertDot(Vector3D* dot)
 
     while (it != _Mesh->end())
     {
+        _Statistics[0]++;
+
         det_1 = GetDeterminant(triangle->Vertex[0], triangle->Vertex[1], dot);
         det_2 = GetDeterminant(triangle->Vertex[1], triangle->Vertex[2], dot);
         det_3 = GetDeterminant(triangle->Vertex[2], triangle->Vertex[0], dot);
@@ -264,6 +268,8 @@ void DelaunayTriangulation::FixNeighborhood(Triangle* target, Triangle* oldNeigh
 
 void DelaunayTriangulation::DoLocalOptimization(Triangle* t1, Triangle* t2)
 {
+    _Statistics[1]++;
+
     for (int i = 0; i < 3; i++)
     {
         if (t2->Vertex[i] == t1->Vertex[0] ||
@@ -377,4 +383,11 @@ double DelaunayTriangulation::GetDeterminant(double matrix[])
         - matrix[0] * matrix[4] * matrix[8]
         - matrix[1] * matrix[5] * matrix[6]
         - matrix[2] * matrix[3] * matrix[7];
+}
+
+string DelaunayTriangulation::GetStatistics()
+{
+    return "Triangle count: " + to_string(_Mesh->size())
+        + "\nTriangle search operations: " + to_string(_Statistics[0])
+        + "\nLocal optimizations: " + to_string(_Statistics[1]);
 }
