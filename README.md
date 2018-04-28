@@ -17,3 +17,4 @@ Will explain later with image
 
 ## To Do
 * ~~Handle holes left due to removing auxiliary triangles~~
+* ~~Fix potential dealoop in triangle searching operation~~
