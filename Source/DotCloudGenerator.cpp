@@ -26,7 +26,6 @@ vector<Vector3D*> DotCloudGenerator::GetSphericalDots()
         Vector3D* dot = GetRandomDotEvenlyDistributed();
         file << "# " << dot->X << " " << dot->Y << " " << dot->Z << " "
             << dot->R << " " << dot->G << " " << dot->B << " " << endl;
-        dot->Id = dots.size();
         dots.push_back(dot);
     }
 

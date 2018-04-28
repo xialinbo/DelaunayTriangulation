@@ -169,7 +169,6 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
 
     for (int i = 0; i < INIT_VERTICES_COUNT; i++)
     {
-        auxiliaryDots[i]->Id = dots->size();
         dots->push_back(auxiliaryDots[i]);
     }
 }
@@ -193,8 +192,14 @@ void DelaunayTriangulation::InsertDot(Vector3D* dot)
         // if this dot projected into an existing triangle, split the existing triangle to 3 new ones
         if (det_1 >= 0 && det_2 >= 0 && det_3 >= 0)
         {
-            SplitTriangle(dot, triangle);
-            break;
+            if (!triangle->Vertex[0]->IsInSamePosition(dot)
+                && !triangle->Vertex[1]->IsInSamePosition(dot)
+                && !triangle->Vertex[2]->IsInSamePosition(dot))
+            {
+                SplitTriangle(triangle, dot);
+            }
+
+            return;
         }
 
         // on one side, search neighbors
@@ -245,7 +250,7 @@ void DelaunayTriangulation::RemoveExtraTriangles()
     }
 }
 
-void DelaunayTriangulation::SplitTriangle(Vector3D* dot, Triangle* triangle)
+void DelaunayTriangulation::SplitTriangle(Triangle* triangle, Vector3D* dot)
 {
     Triangle* newTriangle1 = new Triangle(dot, triangle->Vertex[1], triangle->Vertex[2]);
     Triangle* newTriangle2 = new Triangle(dot, triangle->Vertex[2], triangle->Vertex[0]);
@@ -393,12 +398,15 @@ double DelaunayTriangulation::GetDeterminant(Vector3D* v1, Vector3D* v2, Vector3
 double DelaunayTriangulation::GetDeterminant(double matrix[])
 {
     // inversed for left handed coordinate system
-    return matrix[2] * matrix[4] * matrix[6]
+    double determinant = matrix[2] * matrix[4] * matrix[6]
         + matrix[0] * matrix[5] * matrix[7]
         + matrix[1] * matrix[3] * matrix[8]
         - matrix[0] * matrix[4] * matrix[8]
         - matrix[1] * matrix[5] * matrix[6]
         - matrix[2] * matrix[3] * matrix[7];
+
+    // adjust result based on float number accuracy, otherwise causing deadloop
+    return abs(determinant) <= DBL_EPSILON ? 0 : determinant;
 }
 
 string DelaunayTriangulation::GetStatistics()

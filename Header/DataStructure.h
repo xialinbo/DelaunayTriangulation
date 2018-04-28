@@ -5,6 +5,8 @@ namespace dt
 {
     class Vector3D
     {
+    private:
+        int GenerateId();
     public:
         int Id = 0;
 
@@ -21,13 +23,20 @@ namespace dt
         Vector3D(double, double, double, bool, int = 255, int = 248, int = 220);
         Vector3D(Vector3D*, double);
         ~Vector3D();
+
+        bool IsInSamePosition(Vector3D*);
+        std::string ToString();
     };
 
     class Triangle
     {
+    private:
+        int GenerateId();
     public:
+        int Id = 0;
+
         // pointers pointing to 3 vertices
-        Vector3D * Vertex[3];
+        Vector3D* Vertex[3];
 
         // pointers pointing to 3 neighbors
         Triangle* Neighbor[3];
@@ -36,6 +45,7 @@ namespace dt
         ~Triangle();
 
         void AssignNeighbors(Triangle*, Triangle*, Triangle*);
+        std::string ToString();
     };
 }
 

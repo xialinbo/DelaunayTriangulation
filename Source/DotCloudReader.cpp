@@ -26,7 +26,6 @@ vector<Vector3D*> DotCloudReader::GetDotCloud()
     {
         file >> x >> y >> z >> red >> green >> blue;
         Vector3D* dot = new Vector3D(x, y, z, red, green, blue);
-        dot->Id = dots.size();
         dots.push_back(dot);
     }
 

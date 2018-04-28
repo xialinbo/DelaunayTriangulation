@@ -1,10 +1,14 @@
 #include <cmath>
+#include <string>
 #include "../Header/DataStructure.h"
 
+using namespace std;
 using namespace dt;
 
 Vector3D::Vector3D(double x, double y, double z, int r, int g, int b)
 {
+    Id = GenerateId();
+
     X = x;
     Y = y;
     Z = z;
@@ -16,6 +20,8 @@ Vector3D::Vector3D(double x, double y, double z, int r, int g, int b)
 
 Vector3D::Vector3D(double x, double y, double z, bool isAuxiliaryDot, int r, int g, int b)
 {
+    Id = GenerateId();
+
     IsAuxiliaryDot = isAuxiliaryDot;
 
     X = x;
@@ -47,4 +53,24 @@ Vector3D::Vector3D(Vector3D* dot, double lengthAfterProjection)
 
 Vector3D::~Vector3D()
 {
+}
+
+bool Vector3D::IsInSamePosition(Vector3D* dot)
+{
+    return (X == dot->X && Y == dot->Y && Z == dot->Z);
+}
+
+string Vector3D::ToString()
+{
+    return "Dot ID: " + to_string(Id) + "; "
+        + to_string(X) + ", " + to_string(Y) + ", " + to_string(Z) + "; "
+        + to_string(R) + ", " + to_string(G) + ", " + to_string(B) + "; "
+        + "IsVisited: " + (IsVisited ? "true" : "false") + "; "
+        + "IsAuxiliaryDot: " + (IsAuxiliaryDot ? "true" : "false") + ";\n";
+}
+
+int Vector3D::GenerateId()
+{
+    static int id = 0;
+    return id++;
 }

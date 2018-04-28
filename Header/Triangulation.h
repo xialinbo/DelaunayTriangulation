@@ -19,7 +19,7 @@ namespace dt
         void BuildInitialHull(std::vector<Vector3D*>*);
         void InsertDot(Vector3D*);
         void RemoveExtraTriangles();
-        void SplitTriangle(Vector3D*, Triangle*);
+        void SplitTriangle(Triangle*, Vector3D*);
         void FixNeighborhood(Triangle*, Triangle*, Triangle*);
         void DoLocalOptimization(Triangle*, Triangle*);
         bool TrySwapDiagonal(Triangle*, Triangle*);
