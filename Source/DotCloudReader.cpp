@@ -2,7 +2,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "../Header/DotCloudReader.h"
+#include "../Header/DotCloud.h"
+
+using namespace std;
+using namespace dt;
 
 vector<Vector3D*> DotCloudReader::GetDotCloud()
 {

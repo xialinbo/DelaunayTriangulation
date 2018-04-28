@@ -1,5 +1,7 @@
 #include <cmath>
-#include "../Header/Vector3D.h"
+#include "../Header/DataStructure.h"
+
+using namespace dt;
 
 Vector3D::Vector3D(double x, double y, double z, int r, int g, int b)
 {

@@ -1,18 +1,25 @@
+#include <regex>
 #include <string>
 #include <tuple>
 #include <vector>
-#include "../Header/DelaunayTriangulation.h"
+#include "../Header/Triangulation.h"
 
 #define INIT_VERTICES_COUNT 6
 #define INIT_FACES_COUNT 8
 #define VECTOR_LENGTH 1
 
+using namespace std;
+using namespace dt;
+
 DelaunayTriangulation::DelaunayTriangulation()
 {
     _ProjectedDots = new vector<Vector3D*>();
     _Mesh = new vector<Triangle*>();
-    _Statistics[0] = 0;
-    _Statistics[1] = 0;
+
+    for (int i = 0; i < sizeof(_Statistics) / sizeof(long); i++)
+    {
+        _Statistics[i] = i;
+    }
 }
 
 DelaunayTriangulation::~DelaunayTriangulation()
@@ -35,6 +42,13 @@ DelaunayTriangulation::~DelaunayTriangulation()
 
 vector<tuple<int, int, int>*> DelaunayTriangulation::GetTriangulationResult(vector<Vector3D*> &dots)
 {
+    _Statistics[2] = clock();
+
+    _ProjectedDots->reserve(dots.size());
+
+    // N random dots can form 8+(N-6)*2 triangles based on the algorithm
+    _Mesh->reserve(8 + (dots.size() - 6) * 2);
+
     // project dots to an unit shpere for triangulation
     vector<Vector3D*>::iterator itDots;
     for (itDots = dots.begin(); itDots != dots.end(); itDots++)
@@ -68,6 +82,8 @@ vector<tuple<int, int, int>*> DelaunayTriangulation::GetTriangulationResult(vect
             triangle->Vertex[2]->Id
             ));
     }
+
+    _Statistics[3] = clock();
 
     return mesh;
 }
@@ -387,7 +403,16 @@ double DelaunayTriangulation::GetDeterminant(double matrix[])
 
 string DelaunayTriangulation::GetStatistics()
 {
-    return "Triangle count: " + to_string(_Mesh->size())
-        + "\nTriangle search operations: " + to_string(_Statistics[0])
-        + "\nLocal optimizations: " + to_string(_Statistics[1]);
+    // display thousands separator
+    regex regex("\\d{1,3}(?=(\\d{3})+$)");
+
+    return "\nTriangle count: "
+        + regex_replace(to_string(_Mesh->size()), regex, "$&,")
+        + "\nTriangle search operations: "
+        + regex_replace(to_string(_Statistics[0]), regex, "$&,")
+        + "\nLocal optimizations: "
+        + regex_replace(to_string(_Statistics[1]), regex, "$&,")
+        + "\nTriangulation cost: "
+        + to_string(_Statistics[3] - _Statistics[2])
+        + "ms\n";
 }

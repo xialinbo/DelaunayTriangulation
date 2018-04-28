@@ -36,22 +36,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Header\DotCloudGenerator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\DotCloudReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Header\Visualization.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Header\Triangle.h">
+    <ClInclude Include="Header\DataStructure.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Header\DelaunayTriangulation.h">
+    <ClInclude Include="Header\DotCloud.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Header\Vector3D.h">
+    <ClInclude Include="Header\Triangulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

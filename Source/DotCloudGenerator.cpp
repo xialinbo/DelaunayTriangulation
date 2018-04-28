@@ -2,10 +2,13 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include "../Header/DotCloudGenerator.h"
+#include "../Header/DotCloud.h"
 
 #define PI 3.14159265
 #define RADIUS 100
+
+using namespace std;
+using namespace dt;
 
 vector<Vector3D*> DotCloudGenerator::GetSphericalDots()
 {

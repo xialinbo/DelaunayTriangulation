@@ -13,6 +13,9 @@
 #include <vtkInteractorStyleTrackballCamera.h>
 #include "../Header/Visualization.h"
 
+using namespace std;
+using namespace dt;
+
 void Visualization::ReconstructIn3D(vector<Vector3D*> &dots, vector<tuple<int, int, int>*> &mesh)
 {
     vtkPoints* points = vtkPoints::New();

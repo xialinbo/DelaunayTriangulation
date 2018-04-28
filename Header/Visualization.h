@@ -1,14 +1,15 @@
 #ifndef VISUALIZATION_H
 #define VISUALIZATION_H
 
-#include "DelaunayTriangulation.h"
+#include "DataStructure.h"
 
-using namespace std;
-
-class Visualization
+namespace dt
 {
-public:
-    void ReconstructIn3D(vector<Vector3D*>&, vector<tuple<int, int, int>*>&);
-};
+    class Visualization
+    {
+    public:
+        void ReconstructIn3D(std::vector<Vector3D*>&, std::vector<std::tuple<int, int, int>*>&);
+    };
+}
 
 #endif

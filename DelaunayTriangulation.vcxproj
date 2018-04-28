@@ -125,11 +125,9 @@
     <ClCompile Include="Source\Visualization.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Header\DotCloudReader.h" />
-    <ClInclude Include="Header\Triangle.h" />
-    <ClInclude Include="Header\DelaunayTriangulation.h" />
-    <ClInclude Include="Header\DotCloudGenerator.h" />
-    <ClInclude Include="Header\Vector3D.h" />
+    <ClInclude Include="Header\DotCloud.h" />
+    <ClInclude Include="Header\Triangulation.h" />
+    <ClInclude Include="Header\DataStructure.h" />
     <ClInclude Include="Header\Visualization.h" />
   </ItemGroup>
   <ItemGroup>

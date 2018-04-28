@@ -1,13 +1,12 @@
-#include <ctime>
 #include <iostream>
 #include <string>
 #include <vector>
-#include "Header/DotCloudGenerator.h"
-#include "Header/DotCloudReader.h"
-#include "Header/DelaunayTriangulation.h"
+#include "Header/DotCloud.h"
+#include "Header/Triangulation.h"
 #include "Header/Visualization.h"
 
 using namespace std;
+using namespace dt;
 
 void ClearMemory(vector<Vector3D*>&, vector<tuple<int, int, int>*>&);
 
@@ -24,11 +23,9 @@ int main()
             ? DotCloudGenerator().GetSphericalDots()
             : DotCloudReader().GetDotCloud();
 
-        clock_t then = clock();
         DelaunayTriangulation triangulation = DelaunayTriangulation();
         vector<tuple<int, int, int>*> mesh = triangulation.GetTriangulationResult(dots);
         cout << triangulation.GetStatistics() << endl;
-        cout << "Triangulation cost: " << clock() - then << "ms" << endl;
 
         Visualization visualization = Visualization();
         visualization.ReconstructIn3D(dots, mesh);

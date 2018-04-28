@@ -1,4 +1,6 @@
-#include "../Header/Triangle.h"
+#include "../Header/DataStructure.h"
+
+using namespace dt;
 
 Triangle::Triangle(Vector3D* v0, Vector3D* v1, Vector3D* v2)
 {
