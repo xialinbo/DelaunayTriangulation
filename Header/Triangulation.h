@@ -1,6 +1,10 @@
 #ifndef TRIANGULATION_H
 #define TRIANGULATION_H
 
+#define INIT_VERTICES_COUNT 6 /* count of vertices in the initial hull */
+#define INIT_FACES_COUNT 8 /* count of faces in the initial hull */
+#define VECTOR_LENGTH 1 /* radius of unit sphere the dots projected into */
+
 #include "DataStructure.h"
 
 namespace dt
@@ -8,6 +12,7 @@ namespace dt
     class DelaunayTriangulation
     {
     private:
+        Vector3D * _AuxiliaryDots[INIT_VERTICES_COUNT];
         std::vector<Vector3D*>* _ProjectedDots;
         std::vector<Triangle*>* _Mesh;
 

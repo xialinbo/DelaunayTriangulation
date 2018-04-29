@@ -4,15 +4,21 @@
 #include <vector>
 #include "../Header/Triangulation.h"
 
-#define INIT_VERTICES_COUNT 6 /* count of vertices in the initial hull */
-#define INIT_FACES_COUNT 8 /* count of faces in the initial hull */
-#define VECTOR_LENGTH 1 /* radius of unit sphere the dots projected into */
-
 using namespace std;
 using namespace dt;
 
 DelaunayTriangulation::DelaunayTriangulation()
 {
+    for (int i = 0; i < INIT_VERTICES_COUNT; i++)
+    {
+        _AuxiliaryDots[i] = new Vector3D(
+            (i % 2 == 0 ? 1 : -1) * (i / 2 == 0 ? VECTOR_LENGTH : 0),
+            (i % 2 == 0 ? 1 : -1) * (i / 2 == 1 ? VECTOR_LENGTH : 0),
+            (i % 2 == 0 ? 1 : -1) * (i / 2 == 2 ? VECTOR_LENGTH : 0),
+            true, 0, 0, 0
+        );
+    }
+
     _ProjectedDots = new vector<Vector3D*>();
     _Mesh = new vector<Triangle*>();
 
@@ -24,6 +30,11 @@ DelaunayTriangulation::DelaunayTriangulation()
 
 DelaunayTriangulation::~DelaunayTriangulation()
 {
+    for (int i = 0; i < INIT_VERTICES_COUNT; i++)
+    {
+        delete _AuxiliaryDots[i];
+    }
+
     vector<Vector3D*>::iterator itDots;
     for (itDots = _ProjectedDots->begin(); itDots != _ProjectedDots->end(); itDots++)
     {
@@ -63,14 +74,16 @@ vector<tuple<int, int, int>*> DelaunayTriangulation::GetTriangulationResult(vect
     for (itDots = _ProjectedDots->begin(); itDots != _ProjectedDots->end(); itDots++)
     {
         Vector3D* dot = *itDots;
-        if (!dot->IsVisited && !dot->IsAuxiliaryDot)
+        if (!dot->IsVisited)
         {
             InsertDot(dot);
         }
     }
 
+    // remove trianges connected with auxiliary dots
     RemoveExtraTriangles();
 
+    // generate output
     vector<tuple<int, int, int>*> mesh = vector<tuple<int, int, int>*>();
     vector<Triangle*>::iterator itMesh;
     for (itMesh = _Mesh->begin(); itMesh != _Mesh->end(); itMesh++)
@@ -93,19 +106,12 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
     Vector3D* initialVertices[INIT_VERTICES_COUNT];
     Triangle* initialHullFaces[INIT_FACES_COUNT];
 
-    Vector3D* auxiliaryDots[INIT_VERTICES_COUNT];
     for (int i = 0; i < INIT_VERTICES_COUNT; i++)
     {
-        auxiliaryDots[i] = new Vector3D(
-            (i % 2 == 0 ? 1 : -1) * (i / 2 == 0 ? VECTOR_LENGTH : 0),
-            (i % 2 == 0 ? 1 : -1) * (i / 2 == 1 ? VECTOR_LENGTH : 0),
-            (i % 2 == 0 ? 1 : -1) * (i / 2 == 2 ? VECTOR_LENGTH : 0),
-            true, 0, 0, 0
-        );
-
-        initialVertices[i] = auxiliaryDots[i];
+        initialVertices[i] = _AuxiliaryDots[i];
     }
 
+    // if close enough, use input dots to replace auxiliary dots so won't be removed in the end
     double minDistance[INIT_VERTICES_COUNT] = { 0, 0, 0, 0, 0, 0 };
     vector<Vector3D*>::iterator it;
     for (it = dots->begin(); it != dots->end(); it++)
@@ -113,7 +119,7 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
         double distance[INIT_VERTICES_COUNT];
         for (int i = 0; i < INIT_VERTICES_COUNT; i++)
         {
-            distance[i] = GetDistance(auxiliaryDots[i], *it);
+            distance[i] = GetDistance(_AuxiliaryDots[i], *it);
             if (minDistance[i] == 0 || distance[i] < minDistance[i])
             {
                 minDistance[i] = distance[i];
@@ -124,18 +130,8 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
         {
             if (minDistance[i] == distance[i] && IsMinimumValueInArray(distance, INIT_VERTICES_COUNT, i))
             {
-                // if close enough, use input dot to replace auxiliary dots for initial hull construction
                 initialVertices[i] = *it;
             }
-        }
-    }
-
-    for (int i = 0; i < INIT_VERTICES_COUNT; i++)
-    {
-        if (!initialVertices[i]->IsAuxiliaryDot)
-        {
-            // avoid being visited by InsertDot() again
-            initialVertices[i]->IsVisited = true;
         }
     }
 
@@ -167,9 +163,10 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
         initialHullFaces[i]->AssignNeighbors(n0, n1, n2);
     }
 
+    // dot already in the mesh, avoid being visited by InsertDot() again
     for (int i = 0; i < INIT_VERTICES_COUNT; i++)
     {
-        dots->push_back(auxiliaryDots[i]);
+        initialVertices[i]->IsVisited = true;
     }
 }
 
