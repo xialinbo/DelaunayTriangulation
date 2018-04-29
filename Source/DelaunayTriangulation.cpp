@@ -4,9 +4,9 @@
 #include <vector>
 #include "../Header/Triangulation.h"
 
-#define INIT_VERTICES_COUNT 6
-#define INIT_FACES_COUNT 8
-#define VECTOR_LENGTH 1
+#define INIT_VERTICES_COUNT 6 /* count of vertices in the initial hull */
+#define INIT_FACES_COUNT 8 /* count of faces in the initial hull */
+#define VECTOR_LENGTH 1 /* radius of unit sphere the dots projected into */
 
 using namespace std;
 using namespace dt;
@@ -18,7 +18,7 @@ DelaunayTriangulation::DelaunayTriangulation()
 
     for (int i = 0; i < sizeof(_Statistics) / sizeof(long); i++)
     {
-        _Statistics[i] = i;
+        _Statistics[i] = 0;
     }
 }
 
@@ -175,7 +175,7 @@ void DelaunayTriangulation::BuildInitialHull(vector<Vector3D*>* dots)
 
 void DelaunayTriangulation::InsertDot(Vector3D* dot)
 {
-    double det_1 = 0, det_2 = 0, det_3 = 0;
+    double det[] = { 0, 0, 0 };
 
     vector<Triangle*>::iterator it;
     it = _Mesh->begin();
@@ -185,16 +185,14 @@ void DelaunayTriangulation::InsertDot(Vector3D* dot)
     {
         _Statistics[0]++;
 
-        det_1 = GetDeterminant(triangle->Vertex[0], triangle->Vertex[1], dot);
-        det_2 = GetDeterminant(triangle->Vertex[1], triangle->Vertex[2], dot);
-        det_3 = GetDeterminant(triangle->Vertex[2], triangle->Vertex[0], dot);
+        det[0] = GetDeterminant(triangle->Vertex[0], triangle->Vertex[1], dot);
+        det[1] = GetDeterminant(triangle->Vertex[1], triangle->Vertex[2], dot);
+        det[2] = GetDeterminant(triangle->Vertex[2], triangle->Vertex[0], dot);
 
         // if this dot projected into an existing triangle, split the existing triangle to 3 new ones
-        if (det_1 >= 0 && det_2 >= 0 && det_3 >= 0)
+        if (det[0] >= 0 && det[1] >= 0 && det[2] >= 0)
         {
-            if (!triangle->Vertex[0]->IsInSamePosition(dot)
-                && !triangle->Vertex[1]->IsInSamePosition(dot)
-                && !triangle->Vertex[2]->IsInSamePosition(dot))
+            if (!triangle->HasVertexCoincidentWith(dot))
             {
                 SplitTriangle(triangle, dot);
             }
@@ -203,19 +201,19 @@ void DelaunayTriangulation::InsertDot(Vector3D* dot)
         }
 
         // on one side, search neighbors
-        else if (det_2 >= 0 && det_3 >= 0)
+        else if (det[1] >= 0 && det[2] >= 0)
             triangle = triangle->Neighbor[0];
-        else if (det_1 >= 0 && det_3 >= 0)
+        else if (det[0] >= 0 && det[2] >= 0)
             triangle = triangle->Neighbor[1];
-        else if (det_1 >= 0 && det_2 >= 0)
+        else if (det[0] >= 0 && det[1] >= 0)
             triangle = triangle->Neighbor[2];
 
         // cannot determine effectively 
-        else if (det_1 > 0)
+        else if (det[0] >= 0)
             triangle = triangle->Neighbor[1];
-        else if (det_2 > 0)
+        else if (det[1] >= 0)
             triangle = triangle->Neighbor[2];
-        else if (det_3 > 0)
+        else if (det[2] >= 0)
             triangle = triangle->Neighbor[0];
         else
             triangle = *it++;
@@ -287,31 +285,31 @@ void DelaunayTriangulation::FixNeighborhood(Triangle* target, Triangle* oldNeigh
     }
 }
 
-void DelaunayTriangulation::DoLocalOptimization(Triangle* t1, Triangle* t2)
+void DelaunayTriangulation::DoLocalOptimization(Triangle* t0, Triangle* t1)
 {
     _Statistics[1]++;
 
     for (int i = 0; i < 3; i++)
     {
-        if (t2->Vertex[i] == t1->Vertex[0] ||
-            t2->Vertex[i] == t1->Vertex[1] ||
-            t2->Vertex[i] == t1->Vertex[2])
+        if (t1->Vertex[i] == t0->Vertex[0] ||
+            t1->Vertex[i] == t0->Vertex[1] ||
+            t1->Vertex[i] == t0->Vertex[2])
         {
             continue;
         }
 
         double matrix[] = {
-            t2->Vertex[i]->X - t1->Vertex[0]->X,
-            t2->Vertex[i]->Y - t1->Vertex[0]->Y,
-            t2->Vertex[i]->Z - t1->Vertex[0]->Z,
+            t1->Vertex[i]->X - t0->Vertex[0]->X,
+            t1->Vertex[i]->Y - t0->Vertex[0]->Y,
+            t1->Vertex[i]->Z - t0->Vertex[0]->Z,
 
-            t2->Vertex[i]->X - t1->Vertex[1]->X,
-            t2->Vertex[i]->Y - t1->Vertex[1]->Y,
-            t2->Vertex[i]->Z - t1->Vertex[1]->Z,
+            t1->Vertex[i]->X - t0->Vertex[1]->X,
+            t1->Vertex[i]->Y - t0->Vertex[1]->Y,
+            t1->Vertex[i]->Z - t0->Vertex[1]->Z,
 
-            t2->Vertex[i]->X - t1->Vertex[2]->X,
-            t2->Vertex[i]->Y - t1->Vertex[2]->Y,
-            t2->Vertex[i]->Z - t1->Vertex[2]->Z
+            t1->Vertex[i]->X - t0->Vertex[2]->X,
+            t1->Vertex[i]->Y - t0->Vertex[2]->Y,
+            t1->Vertex[i]->Z - t0->Vertex[2]->Z
         };
 
         if (GetDeterminant(matrix) <= 0)
@@ -320,41 +318,41 @@ void DelaunayTriangulation::DoLocalOptimization(Triangle* t1, Triangle* t2)
             break;
         }
 
-        if (TrySwapDiagonal(t1, t2))
+        if (TrySwapDiagonal(t0, t1))
         {
             return;
         }
     }
 }
 
-bool DelaunayTriangulation::TrySwapDiagonal(Triangle * t1, Triangle * t2)
+bool DelaunayTriangulation::TrySwapDiagonal(Triangle* t0, Triangle* t1)
 {
     for (int j = 0; j < 3; j++)
     {
         for (int k = 0; k < 3; k++)
         {
-            if (t1->Vertex[j] != t2->Vertex[0] &&
-                t1->Vertex[j] != t2->Vertex[1] &&
-                t1->Vertex[j] != t2->Vertex[2] &&
-                t2->Vertex[k] != t1->Vertex[0] &&
-                t2->Vertex[k] != t1->Vertex[1] &&
-                t2->Vertex[k] != t1->Vertex[2])
+            if (t0->Vertex[j] != t1->Vertex[0] &&
+                t0->Vertex[j] != t1->Vertex[1] &&
+                t0->Vertex[j] != t1->Vertex[2] &&
+                t1->Vertex[k] != t0->Vertex[0] &&
+                t1->Vertex[k] != t0->Vertex[1] &&
+                t1->Vertex[k] != t0->Vertex[2])
             {
-                t1->Vertex[(j + 2) % 3] = t2->Vertex[k];
-                t2->Vertex[(k + 2) % 3] = t1->Vertex[j];
+                t0->Vertex[(j + 2) % 3] = t1->Vertex[k];
+                t1->Vertex[(k + 2) % 3] = t0->Vertex[j];
 
-                t1->Neighbor[(j + 1) % 3] = t2->Neighbor[(k + 2) % 3];
-                t2->Neighbor[(k + 1) % 3] = t1->Neighbor[(j + 2) % 3];
-                t1->Neighbor[(j + 2) % 3] = t2;
-                t2->Neighbor[(k + 2) % 3] = t1;
+                t0->Neighbor[(j + 1) % 3] = t1->Neighbor[(k + 2) % 3];
+                t1->Neighbor[(k + 1) % 3] = t0->Neighbor[(j + 2) % 3];
+                t0->Neighbor[(j + 2) % 3] = t1;
+                t1->Neighbor[(k + 2) % 3] = t0;
 
-                FixNeighborhood(t1->Neighbor[(j + 1) % 3], t2, t1);
-                FixNeighborhood(t2->Neighbor[(k + 1) % 3], t1, t2);
+                FixNeighborhood(t0->Neighbor[(j + 1) % 3], t1, t0);
+                FixNeighborhood(t1->Neighbor[(k + 1) % 3], t0, t1);
 
-                DoLocalOptimization(t1, t1->Neighbor[j]);
-                DoLocalOptimization(t1, t1->Neighbor[(j + 1) % 3]);
-                DoLocalOptimization(t2, t2->Neighbor[k]);
-                DoLocalOptimization(t2, t2->Neighbor[(k + 1) % 3]);
+                DoLocalOptimization(t0, t0->Neighbor[j]);
+                DoLocalOptimization(t0, t0->Neighbor[(j + 1) % 3]);
+                DoLocalOptimization(t1, t1->Neighbor[k]);
+                DoLocalOptimization(t1, t1->Neighbor[(k + 1) % 3]);
 
                 return true;
             }
@@ -377,19 +375,19 @@ bool DelaunayTriangulation::IsMinimumValueInArray(double arr[], int length, int 
     return true;
 }
 
-double DelaunayTriangulation::GetDistance(Vector3D* v1, Vector3D* v2)
+double DelaunayTriangulation::GetDistance(Vector3D* v0, Vector3D* v1)
 {
-    return sqrt(pow((v1->X - v2->X), 2) +
-        pow((v1->Y - v2->Y), 2) +
-        pow((v1->Z - v2->Z), 2));
+    return sqrt(pow((v0->X - v1->X), 2) +
+        pow((v0->Y - v1->Y), 2) +
+        pow((v0->Z - v1->Z), 2));
 }
 
-double DelaunayTriangulation::GetDeterminant(Vector3D* v1, Vector3D* v2, Vector3D* v3)
+double DelaunayTriangulation::GetDeterminant(Vector3D* v0, Vector3D* v1, Vector3D* v2)
 {
     double matrix[] = {
+        v0->X, v0->Y, v0->Z,
         v1->X, v1->Y, v1->Z,
-        v2->X, v2->Y, v2->Z,
-        v3->X, v3->Y, v3->Z
+        v2->X, v2->Y, v2->Z
     };
 
     return GetDeterminant(matrix);

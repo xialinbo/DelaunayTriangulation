@@ -27,7 +27,7 @@ int main()
         vector<tuple<int, int, int>*> mesh = triangulation.GetTriangulationResult(dots);
         cout << triangulation.GetStatistics() << endl;
 
-        Visualization visualization = Visualization();
+        Visualization visualization = Visualization(false);
         visualization.ReconstructIn3D(dots, mesh);
 
         ClearMemory(dots, mesh);

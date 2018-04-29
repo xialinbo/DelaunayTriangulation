@@ -5,9 +5,9 @@
 using namespace std;
 using namespace dt;
 
-Vector3D::Vector3D(double x, double y, double z, int r, int g, int b)
+Vector3D::Vector3D(double x, double y, double z, uint8_t r, uint8_t g, uint8_t b)
 {
-    Id = GenerateId();
+    Id = GenerateRunningId();
 
     X = x;
     Y = y;
@@ -18,9 +18,9 @@ Vector3D::Vector3D(double x, double y, double z, int r, int g, int b)
     B = b;
 }
 
-Vector3D::Vector3D(double x, double y, double z, bool isAuxiliaryDot, int r, int g, int b)
+Vector3D::Vector3D(double x, double y, double z, bool isAuxiliaryDot, uint8_t r, uint8_t g, uint8_t b)
 {
-    Id = GenerateId();
+    Id = GenerateRunningId();
 
     IsAuxiliaryDot = isAuxiliaryDot;
 
@@ -55,7 +55,13 @@ Vector3D::~Vector3D()
 {
 }
 
-bool Vector3D::IsInSamePosition(Vector3D* dot)
+int Vector3D::GenerateRunningId()
+{
+    static int id = 0;
+    return id++;
+}
+
+bool Vector3D::IsCoincidentWith(Vector3D* dot)
 {
     return (X == dot->X && Y == dot->Y && Z == dot->Z);
 }
@@ -67,10 +73,4 @@ string Vector3D::ToString()
         + to_string(R) + ", " + to_string(G) + ", " + to_string(B) + "; "
         + "IsVisited: " + (IsVisited ? "true" : "false") + "; "
         + "IsAuxiliaryDot: " + (IsAuxiliaryDot ? "true" : "false") + ";\n";
-}
-
-int Vector3D::GenerateId()
-{
-    static int id = 0;
-    return id++;
 }

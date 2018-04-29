@@ -18,7 +18,7 @@ vector<Vector3D*> DotCloudReader::GetDotCloud()
     ifstream file(filename);
 
     double x = 0, y = 0, z = 0;
-    int red = 0, green = 0, blue = 0;
+    uint8_t red = 0, green = 0, blue = 0;
     char hex;
 
     //each row start with a "#"

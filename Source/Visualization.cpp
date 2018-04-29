@@ -16,6 +16,15 @@
 using namespace std;
 using namespace dt;
 
+Visualization::Visualization(bool isShowWireframe)
+{
+    IsShowWireframe = isShowWireframe;
+}
+
+Visualization::~Visualization()
+{
+}
+
 void Visualization::ReconstructIn3D(vector<Vector3D*> &dots, vector<tuple<int, int, int>*> &mesh)
 {
     vtkPoints* points = vtkPoints::New();
@@ -68,7 +77,10 @@ void Visualization::ReconstructIn3D(vector<Vector3D*> &dots, vector<tuple<int, i
 
     vtkActor* actor = vtkActor::New();
     actor->SetMapper(mapper);
-    //actor->GetProperty()->SetRepresentationToWireframe();
+    if (IsShowWireframe)
+    {
+        actor->GetProperty()->SetRepresentationToWireframe();
+    }
 
     renderer->AddActor(actor);
 
